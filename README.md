@@ -1,2 +1,2 @@
 # jayfrench.cloud
-Website for blog posts
+Personal Website
