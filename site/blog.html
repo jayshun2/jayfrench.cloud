@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog — Alex Morgan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Cabinet+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:        #070b12;
+      --bg2:       #0d1421;
+      --surface:   #141e2e;
+      --border:    rgba(255,255,255,0.06);
+      --primary:   #00d4ff;
+      --accent:    #0066ff;
+      --green:     #00ffaa;
+      --text:      #e8edf5;
+      --muted:     #6b7a94;
+      --font-display: 'Syne', sans-serif;
+      --font-body:    'Cabinet Grotesk', sans-serif;
+      --font-mono:    'DM Mono', monospace;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 16px; line-height: 1.6; overflow-x: hidden; cursor: none; }
+    #cursor-dot, #cursor-ring { position: fixed; top: 0; left: 0; border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%, -50%); }
+    #cursor-dot { width: 6px; height: 6px; background: var(--primary); }
+    #cursor-ring { width: 32px; height: 32px; border: 1.5px solid rgba(0,212,255,0.5); transition: width 0.25s, height 0.25s; }
+    #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    .container { max-width: 960px; margin: 0 auto; padding: 0 2rem; }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1.25rem 2rem; display: flex; align-items: center; justify-content: space-between; background: rgba(7,11,18,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+    .nav-logo { font-family: var(--font-mono); font-size: 0.85rem; color: var(--primary); letter-spacing: 0.1em; text-decoration: none; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); text-decoration: none; letter-spacing: 0.08em; text-transform: uppercase; transition: color 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color: var(--primary); }
+
+    /* BLOG HEADER */
+    .blog-header { position: relative; z-index: 1; padding: 9rem 0 5rem; text-align: center; }
+    .blog-eyebrow { font-family: var(--font-mono); font-size: 0.78rem; color: var(--primary); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 1rem; display: block; }
+    .blog-heading { font-family: var(--font-display); font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 1rem; }
+    .blog-subhead { color: var(--muted); font-size: 1.05rem; max-width: 520px; margin: 0 auto; }
+
+    /* FILTER TAGS */
+    .filter-bar { display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 3rem; position: relative; z-index: 1; }
+    .filter-tag { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); background: var(--surface); border: 1px solid var(--border); padding: 0.45rem 1rem; border-radius: 3px; cursor: none; letter-spacing: 0.06em; transition: color 0.2s, border-color 0.2s; }
+    .filter-tag.active, .filter-tag:hover { color: var(--primary); border-color: rgba(0,212,255,0.35); }
+
+    /* POSTS */
+    .posts-section { position: relative; z-index: 1; padding-bottom: 6rem; }
+    .posts-featured { margin-bottom: 2rem; }
+    .post-featured-card {
+      display: grid; grid-template-columns: 1fr 340px; gap: 3rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 2.5rem; align-items: center;
+      text-decoration: none; color: inherit;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .post-featured-card:hover { border-color: rgba(0,212,255,0.3); transform: translateY(-3px); }
+    .featured-badge { font-family: var(--font-mono); font-size: 0.65rem; color: var(--green); background: rgba(0,255,170,0.08); border: 1px solid rgba(0,255,170,0.2); padding: 0.25rem 0.7rem; border-radius: 3px; letter-spacing: 0.1em; text-transform: uppercase; display: inline-block; margin-bottom: 1rem; }
+    .post-featured-title { font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .post-featured-excerpt { color: var(--muted); font-size: 1rem; line-height: 1.75; margin-bottom: 1.25rem; }
+    .post-meta { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 0.5rem; }
+    .post-read-more { font-family: var(--font-mono); font-size: 0.75rem; color: var(--primary); letter-spacing: 0.08em; }
+    .featured-visual { background: linear-gradient(135deg, rgba(0,102,255,0.12), rgba(0,212,255,0.06)); border: 1px solid rgba(0,212,255,0.1); border-radius: 8px; aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; font-size: 4rem; }
+
+    .posts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 3rem; }
+    .post-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: border-color 0.3s, transform 0.3s; }
+    .post-card:hover { border-color: rgba(0,212,255,0.3); transform: translateY(-4px); }
+    .post-card-accent { height: 3px; background: linear-gradient(90deg, var(--primary), var(--accent)); }
+    .post-card-body { padding: 1.5rem; flex: 1; display: flex; flex-direction: column; }
+    .post-tag { font-family: var(--font-mono); font-size: 0.62rem; color: var(--accent); background: rgba(0,102,255,0.08); border: 1px solid rgba(0,102,255,0.18); padding: 0.2rem 0.55rem; border-radius: 2px; letter-spacing: 0.05em; display: inline-block; margin-bottom: 0.75rem; }
+    .post-card-title { font-family: var(--font-display); font-size: 1rem; font-weight: 700; line-height: 1.35; margin-bottom: 0.65rem; flex: 1; }
+    .post-card-excerpt { font-size: 0.88rem; color: var(--muted); line-height: 1.7; margin-bottom: 1rem; }
+    .post-card-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 0.85rem; margin-top: auto; }
+    .post-date { font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); }
+    .post-mins { font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); }
+
+    /* NEWSLETTER */
+    .newsletter-box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 3rem; text-align: center; position: relative; z-index: 1; overflow: hidden; }
+    .newsletter-box::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at top, rgba(0,212,255,0.05), transparent 60%); pointer-events: none; }
+    .newsletter-title { font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .newsletter-desc { color: var(--muted); margin-bottom: 1.75rem; }
+    .newsletter-form { display: flex; gap: 0.75rem; max-width: 460px; margin: 0 auto; }
+    .newsletter-form input { flex: 1; background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 0.75rem 1rem; color: var(--text); font-family: var(--font-mono); font-size: 0.8rem; outline: none; transition: border-color 0.2s; }
+    .newsletter-form input:focus { border-color: rgba(0,212,255,0.4); }
+    .newsletter-form input::placeholder { color: var(--muted); }
+    .newsletter-form button { padding: 0.75rem 1.5rem; background: var(--primary); color: var(--bg); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 500; border: none; border-radius: 4px; cursor: none; transition: background 0.2s; white-space: nowrap; }
+    .newsletter-form button:hover { background: #33deff; }
+
+    /* REVEAL */
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s, transform 0.7s; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; position: relative; z-index: 1; }
+    footer p { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); letter-spacing: 0.06em; }
+
+    @media (max-width: 800px) {
+      .post-featured-card { grid-template-columns: 1fr; }
+      .featured-visual { display: none; }
+      .posts-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      body { cursor: auto; }
+      #cursor-dot, #cursor-ring { display: none; }
+      .newsletter-form { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="cursor-dot"></div>
+  <div id="cursor-ring"></div>
+  <canvas id="bg-canvas"></canvas>
+
+  <nav>
+    <a href="index.html" class="nav-logo">// alex.morgan</a>
+    <ul class="nav-links">
+      <li><a href="index.html#about">About</a></li>
+      <li><a href="index.html#skills">Skills</a></li>
+      <li><a href="index.html#experience">Experience</a></li>
+      <li><a href="index.html#projects">Projects</a></li>
+      <li><a href="blog.html" class="active">Blog</a></li>
+      <li><a href="index.html#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- BLOG HEADER -->
+  <div class="blog-header">
+    <span class="blog-eyebrow">// Writing</span>
+    <h1 class="blog-heading">Cloud Engineering Blog</h1>
+    <p class="blog-subhead">Deep dives on infrastructure, Kubernetes, DevOps culture, and everything in between.</p>
+  </div>
+
+  <!-- FILTER TAGS -->
+  <div class="filter-bar">
+    <span class="filter-tag active">All Posts</span>
+    <span class="filter-tag">Kubernetes</span>
+    <span class="filter-tag">Terraform</span>
+    <span class="filter-tag">AWS</span>
+    <span class="filter-tag">GCP</span>
+    <span class="filter-tag">FinOps</span>
+    <span class="filter-tag">Security</span>
+    <span class="filter-tag">DevOps</span>
+  </div>
+
+  <div class="posts-section">
+    <div class="container">
+
+      <!-- FEATURED -->
+      <div class="posts-featured reveal">
+        <a href="posts/multi-region-eks.html" class="post-featured-card">
+          <div>
+            <span class="featured-badge">★ Featured</span>
+            <div class="post-meta">Mar 10, 2025 &nbsp;·&nbsp; 12 min read</div>
+            <div class="post-featured-title">Multi-Region EKS: Lessons From Running Kubernetes Across 3 AWS Regions</div>
+            <div class="post-featured-excerpt">What nobody tells you about multi-region Kubernetes — latency trade-offs, data residency pitfalls, control plane quirks, and the GitOps tooling that actually saved us during a regional outage.</div>
+            <div class="post-read-more">Read the full post ↗</div>
+          </div>
+          <div class="featured-visual">☁️</div>
+        </a>
+      </div>
+
+      <!-- POSTS GRID -->
+      <div class="posts-grid">
+        <a href="posts/terraform-at-scale.html" class="post-card reveal">
+          <div class="post-card-accent"></div>
+          <div class="post-card-body">
+            <span class="post-tag">Terraform</span>
+            <div class="post-card-title">Terraform at Scale: Module Strategy for Platform Teams</div>
+            <div class="post-card-excerpt">How we structured our Terraform module library to serve 8 teams without creating a maintenance nightmare.</div>
+            <div class="post-card-footer">
+              <span class="post-date">Feb 21, 2025</span>
+              <span class="post-mins">9 min</span>
+            </div>
+          </div>
+        </a>
+        <a href="posts/cloud-cost-lessons.html" class="post-card reveal">
+          <div class="post-card-accent"></div>
+          <div class="post-card-body">
+            <span class="post-tag">FinOps</span>
+            <div class="post-card-title">Cloud Cost Lessons: How We Cut Our AWS Bill by 38%</div>
+            <div class="post-card-excerpt">A candid breakdown of where the money was going and the specific changes that moved the needle on our AWS spend.</div>
+            <div class="post-card-footer">
+              <span class="post-date">Jan 14, 2025</span>
+              <span class="post-mins">7 min</span>
+            </div>
+          </div>
+        </a>
+        <a href="posts/gitops-drift-detection.html" class="post-card reveal">
+          <div class="post-card-accent"></div>
+          <div class="post-card-body">
+            <span class="post-tag">DevOps</span>
+            <div class="post-card-title">GitOps Drift Detection: Catching Config Drift Before It Bites You</div>
+            <div class="post-card-excerpt">How we use Argo CD's drift detection + custom Slack alerts to catch infrastructure config drift within minutes.</div>
+            <div class="post-card-footer">
+              <span class="post-date">Dec 3, 2024</span>
+              <span class="post-mins">8 min</span>
+            </div>
+          </div>
+        </a>
+        <a href="posts/vpc-lattice.html" class="post-card reveal">
+          <div class="post-card-accent"></div>
+          <div class="post-card-body">
+            <span class="post-tag">AWS</span>
+            <div class="post-card-title">AWS VPC Lattice: Is It Finally the Answer to Service Networking?</div>
+            <div class="post-card-excerpt">We ran VPC Lattice in production for 3 months. Here's an honest review of where it shines and where it still falls short.</div>
+            <div class="post-card-footer">
+              <span class="post-date">Nov 18, 2024</span>
+              <span class="post-mins">11 min</span>
+            </div>
+          </div>
+        </a>
+        <a href="posts/otel-kubernetes.html" class="post-card reveal">
+          <div class="post-card-accent"></div>
+          <div class="post-card-body">
+            <span class="post-tag">Kubernetes</span>
+            <div class="post-card-title">OpenTelemetry on Kubernetes: A Practical Setup Guide</div>
+            <div class="post-card-excerpt">A step-by-step walkthrough of deploying the OTel Collector as a DaemonSet with traces, metrics, and logs flowing to multiple backends.</div>
+            <div class="post-card-footer">
+              <span class="post-date">Oct 29, 2024</span>
+              <span class="post-mins">14 min</span>
+            </div>
+          </div>
+        </a>
+        <a href="posts/zero-trust-aws.html" class="post-card reveal">
+          <div class="post-card-accent"></div>
+          <div class="post-card-body">
+            <span class="post-tag">Security</span>
+            <div class="post-card-title">Zero Trust Networking on AWS Without the Consultant Bill</div>
+            <div class="post-card-excerpt">How to implement zero-trust network architecture on AWS using IAM Identity Center, PrivateLink, and VPC Lattice — without a $200k engagement.</div>
+            <div class="post-card-footer">
+              <span class="post-date">Sep 12, 2024</span>
+              <span class="post-mins">10 min</span>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <!-- NEWSLETTER -->
+      <div class="newsletter-box reveal">
+        <div class="newsletter-title">Stay in the loop</div>
+        <p class="newsletter-desc">New posts on cloud engineering, IaC, and platform engineering — once or twice a month. No spam.</p>
+        <div class="newsletter-form">
+          <input type="email" placeholder="your@email.com" />
+          <button type="button">Subscribe</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2025 Alex Morgan · <a href="index.html" style="color:var(--primary);text-decoration:none;">Back to Portfolio</a></p>
+  </footer>
+
+  <script>
+    // Cursor
+    const dot = document.getElementById('cursor-dot');
+    const ring = document.getElementById('cursor-ring');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+    (function anim(){rx+=(mx-rx)*0.15;ry+=(my-ry)*0.15;dot.style.left=mx+'px';dot.style.top=my+'px';ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(anim);})();
+
+    // Canvas
+    const canvas=document.getElementById('bg-canvas');
+    const ctx=canvas.getContext('2d');
+    let W,H,particles=[];
+    function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+    resize(); window.addEventListener('resize',resize);
+    for(let i=0;i<60;i++) particles.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,r:Math.random()*1.5+.5});
+    function draw(){ctx.clearRect(0,0,W,H);for(let i=0;i<particles.length;i++){for(let j=i+1;j<particles.length;j++){const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<150){ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.strokeStyle=`rgba(0,180,255,${(1-d/150)*.2})`;ctx.lineWidth=.7;ctx.stroke();}}}for(const p of particles){ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle='rgba(0,212,255,0.5)';ctx.fill();p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;}requestAnimationFrame(draw);}
+    draw();
+
+    // Reveal
+    const revealEls=document.querySelectorAll('.reveal');
+    const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.1});
+    revealEls.forEach(el=>obs.observe(el));
+
+    // Filter tags (visual only)
+    document.querySelectorAll('.filter-tag').forEach(tag => {
+      tag.addEventListener('click', () => {
+        document.querySelectorAll('.filter-tag').forEach(t=>t.classList.remove('active'));
+        tag.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

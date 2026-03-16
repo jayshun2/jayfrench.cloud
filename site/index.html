@@ -1,815 +1,659 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="utf-8">
-  <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Jay French | Home</title>
-  <meta name="description" content="">
-  <meta name="keywords" content="">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jonathan French — Network &amp; Cloud Infrastructure Engineer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Cabinet+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:        #070b12;
+      --bg2:       #0d1421;
+      --bg3:       #111927;
+      --surface:   #141e2e;
+      --border:    rgba(255,255,255,0.06);
+      --primary:   #00d4ff;
+      --accent:    #0066ff;
+      --green:     #00ffaa;
+      --text:      #e8edf5;
+      --muted:     #6b7a94;
+      --font-display: 'Syne', sans-serif;
+      --font-body:    'Cabinet Grotesk', sans-serif;
+      --font-mono:    'DM Mono', monospace;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 16px; line-height: 1.6; overflow-x: hidden; cursor: none; }
+    #cursor-dot, #cursor-ring { position: fixed; top: 0; left: 0; border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%, -50%); }
+    #cursor-dot { width: 6px; height: 6px; background: var(--primary); }
+    #cursor-ring { width: 32px; height: 32px; border: 1.5px solid rgba(0,212,255,0.5); transition: width 0.25s, height 0.25s, border-color 0.25s; }
+    body:has(a:hover) #cursor-ring, body:has(button:hover) #cursor-ring { width: 48px; height: 48px; border-color: var(--primary); }
+    #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+    section { position: relative; z-index: 1; }
 
-  <!-- Favicons -->
-  <link href="assets/img/favicon.png" rel="icon">
-  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1.25rem 2rem; display: flex; align-items: center; justify-content: space-between; background: rgba(7,11,18,0.7); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+    .nav-logo { font-family: var(--font-mono); font-size: 0.85rem; color: var(--primary); letter-spacing: 0.1em; text-decoration: none; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); text-decoration: none; letter-spacing: 0.08em; text-transform: uppercase; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--primary); }
 
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com" rel="preconnect">
-  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    /* HERO */
+    #hero { min-height: 100vh; display: flex; align-items: center; padding-top: 80px; }
+    .hero-inner { display: grid; grid-template-columns: 1fr 420px; gap: 4rem; align-items: center; width: 100%; max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+    .hero-eyebrow { font-family: var(--font-mono); font-size: 0.78rem; color: var(--primary); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 1.25rem; opacity: 0; animation: fadeUp 0.8s 0.2s forwards; }
+    .hero-name { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 5.2rem); font-weight: 800; line-height: 1.0; letter-spacing: -0.03em; margin-bottom: 0.5rem; opacity: 0; animation: fadeUp 0.8s 0.35s forwards; }
+    .hero-name span { color: var(--primary); }
+    .hero-title { font-family: var(--font-display); font-size: clamp(1rem, 2vw, 1.35rem); font-weight: 600; color: var(--muted); margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 0.8s 0.5s forwards; }
+    .hero-desc { font-size: 1.02rem; color: var(--muted); max-width: 520px; line-height: 1.75; margin-bottom: 2.5rem; opacity: 0; animation: fadeUp 0.8s 0.65s forwards; }
+    .hero-ctas { display: flex; gap: 1rem; flex-wrap: wrap; opacity: 0; animation: fadeUp 0.8s 0.8s forwards; }
+    .btn-primary { padding: 0.8rem 2rem; background: var(--primary); color: var(--bg); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; border: none; border-radius: 4px; text-decoration: none; cursor: none; transition: background 0.2s, transform 0.2s, box-shadow 0.2s; }
+    .btn-primary:hover { background: #33deff; transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,212,255,0.35); }
+    .btn-ghost { padding: 0.8rem 2rem; background: transparent; color: var(--primary); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid rgba(0,212,255,0.3); border-radius: 4px; text-decoration: none; cursor: none; transition: border-color 0.2s, background 0.2s, transform 0.2s; }
+    .btn-ghost:hover { border-color: var(--primary); background: rgba(0,212,255,0.06); transform: translateY(-2px); }
+    .hero-visual { position: relative; opacity: 0; animation: fadeIn 1.2s 0.5s forwards; }
+    .cloud-diagram { width: 100%; aspect-ratio: 1; }
+    .cloud-diagram svg { width: 100%; height: 100%; overflow: visible; }
 
-  <!-- Vendor CSS Files -->
-  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
-  <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
-  <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+    /* STATS */
+    .stats-bar { position: relative; z-index: 1; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 2rem 0; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .stat { text-align: center; padding: 1rem; }
+    .stat-num { font-family: var(--font-display); font-size: 2.5rem; font-weight: 800; color: var(--primary); display: block; line-height: 1; }
+    .stat-label { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 0.4rem; display: block; }
 
-  <!-- Main CSS File -->
-  <link href="assets/css/main.css" rel="stylesheet">
+    /* SECTION HEADERS */
+    .section-header { margin-bottom: 3.5rem; }
+    .section-label { font-family: var(--font-mono); font-size: 0.72rem; color: var(--primary); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.75rem; }
+    .section-label::after { content: ''; flex: 1; max-width: 80px; height: 1px; background: var(--primary); opacity: 0.4; }
+    .section-title { font-family: var(--font-display); font-size: clamp(2rem, 3.5vw, 2.8rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
 
-  <!-- =======================================================
-  * Template Name: Day
-  * Template URL: https://bootstrapmade.com/day-multipurpose-html-template-for-free/
-  * Updated: Aug 07 2024 with Bootstrap v5.3.3
-  * Author: BootstrapMade.com
-  * License: https://bootstrapmade.com/license/
-  ======================================================== -->
+    /* ABOUT */
+    #about { padding: 7rem 0; }
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; }
+    .about-text p { color: var(--muted); line-height: 1.85; margin-bottom: 1.25rem; font-size: 1.02rem; }
+    .about-text p strong { color: var(--text); }
+    .cert-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 2rem; }
+    .cert-card { padding: 1rem 1.25rem; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: flex-start; gap: 0.75rem; transition: border-color 0.2s, transform 0.2s; }
+    .cert-card:hover { border-color: rgba(0,212,255,0.3); transform: translateY(-2px); }
+    .cert-card.upcoming { border-style: dashed; opacity: 0.7; }
+    .cert-card.upcoming:hover { opacity: 1; }
+    .cert-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.1rem; }
+    .cert-name { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text); font-weight: 500; line-height: 1.35; }
+    .cert-badge { font-family: var(--font-mono); font-size: 0.58rem; color: var(--green); background: rgba(0,255,170,0.08); border: 1px solid rgba(0,255,170,0.2); padding: 0.15rem 0.4rem; border-radius: 2px; margin-top: 0.3rem; display: inline-block; }
+    .cert-badge.soon { color: #ffaa00; background: rgba(255,170,0,0.08); border-color: rgba(255,170,0,0.2); }
+
+    /* SKILLS */
+    #skills { padding: 7rem 0; background: var(--bg2); }
+    .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    .skill-category { padding: 2rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; transition: border-color 0.3s, transform 0.3s; }
+    .skill-category:hover { border-color: rgba(0,212,255,0.25); transform: translateY(-4px); }
+    .skill-cat-icon { font-size: 1.8rem; margin-bottom: 1rem; }
+    .skill-cat-title { font-family: var(--font-display); font-size: 1rem; font-weight: 700; margin-bottom: 1.25rem; }
+    .skill-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .skill-tag { font-family: var(--font-mono); font-size: 0.68rem; color: var(--primary); background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.15); padding: 0.3rem 0.75rem; border-radius: 3px; letter-spacing: 0.05em; }
+
+    /* EXPERIENCE */
+    #experience { padding: 7rem 0; }
+    .timeline { position: relative; }
+    .timeline::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: var(--border); }
+    .timeline-item { padding-left: 2.5rem; padding-bottom: 3.5rem; position: relative; }
+    .timeline-item::before { content: ''; position: absolute; left: -4px; top: 6px; width: 9px; height: 9px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 0 4px rgba(0,212,255,0.15); }
+    .timeline-date { font-family: var(--font-mono); font-size: 0.72rem; color: var(--primary); letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+    .timeline-role { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .timeline-company { font-size: 0.95rem; color: var(--muted); margin-bottom: 1rem; }
+    .timeline-desc { color: var(--muted); font-size: 0.95rem; line-height: 1.75; }
+    .timeline-desc ul { padding-left: 1.2rem; margin-top: 0.5rem; }
+    .timeline-desc li { margin-bottom: 0.4rem; }
+    .timeline-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+    .timeline-tag { font-family: var(--font-mono); font-size: 0.65rem; color: var(--green); background: rgba(0,255,170,0.06); border: 1px solid rgba(0,255,170,0.15); padding: 0.25rem 0.65rem; border-radius: 3px; }
+
+    /* PROJECTS */
+    #projects { padding: 7rem 0; background: var(--bg2); }
+    .projects-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    .project-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 2rem; display: flex; flex-direction: column; transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s; }
+    .project-card:hover { border-color: rgba(0,212,255,0.3); transform: translateY(-6px); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+    .project-icon { font-size: 2rem; margin-bottom: 1.25rem; }
+    .project-title { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; margin-bottom: 0.65rem; }
+    .project-desc { font-size: 0.92rem; color: var(--muted); line-height: 1.7; flex: 1; margin-bottom: 1.25rem; }
+    .project-desc ul { padding-left: 1.1rem; }
+    .project-desc li { margin-bottom: 0.3rem; }
+    .project-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .project-tag { font-family: var(--font-mono); font-size: 0.65rem; color: var(--accent); background: rgba(0,102,255,0.08); border: 1px solid rgba(0,102,255,0.2); padding: 0.25rem 0.6rem; border-radius: 3px; }
+
+    /* EDUCATION */
+    #education { padding: 7rem 0; }
+    .edu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    .edu-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 2rem; transition: border-color 0.3s, transform 0.3s; }
+    .edu-card:hover { border-color: rgba(0,212,255,0.25); transform: translateY(-3px); }
+    .edu-icon { font-size: 1.8rem; margin-bottom: 1rem; }
+    .edu-degree { font-family: var(--font-display); font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .edu-school { font-size: 0.88rem; color: var(--muted); margin-bottom: 0.5rem; }
+    .edu-note { font-family: var(--font-mono); font-size: 0.65rem; color: var(--green); background: rgba(0,255,170,0.06); border: 1px solid rgba(0,255,170,0.15); padding: 0.2rem 0.5rem; border-radius: 2px; display: inline-block; }
+    .edu-note.in-progress { color: #ffaa00; background: rgba(255,170,0,0.06); border-color: rgba(255,170,0,0.18); }
+
+    /* BLOG */
+    #blog { padding: 7rem 0; background: var(--bg2); }
+    .blog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 3rem; }
+    .blog-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: border-color 0.3s, transform 0.3s; }
+    .blog-card:hover { border-color: rgba(0,212,255,0.3); transform: translateY(-4px); }
+    .blog-card-accent { height: 4px; background: linear-gradient(90deg, var(--primary), var(--accent)); }
+    .blog-card-body { padding: 1.75rem; flex: 1; display: flex; flex-direction: column; }
+    .blog-meta { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 0.75rem; }
+    .blog-card-title { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; line-height: 1.35; margin-bottom: 0.75rem; }
+    .blog-excerpt { font-size: 0.88rem; color: var(--muted); line-height: 1.7; flex: 1; }
+    .blog-read-more { font-family: var(--font-mono); font-size: 0.72rem; color: var(--primary); letter-spacing: 0.08em; margin-top: 1.25rem; }
+    .view-all { text-align: center; }
+
+    /* CONTACT */
+    #contact { padding: 7rem 0; }
+    .contact-inner { max-width: 680px; margin: 0 auto; text-align: center; }
+    .contact-inner .section-label { justify-content: center; }
+    .contact-inner .section-label::after { display: none; }
+    .contact-desc { color: var(--muted); font-size: 1.05rem; line-height: 1.75; margin: 1.5rem 0 2.5rem; }
+    .contact-links { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2.5rem; }
+    .contact-link { display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); text-decoration: none; padding: 0.6rem 1.2rem; border: 1px solid var(--border); border-radius: 4px; letter-spacing: 0.06em; transition: color 0.2s, border-color 0.2s; }
+    .contact-link:hover { color: var(--primary); border-color: rgba(0,212,255,0.3); }
+
+    footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; position: relative; z-index: 1; }
+    footer p { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); letter-spacing: 0.06em; }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+    .reveal { opacity:0; transform:translateY(32px); transition:opacity 0.7s ease,transform 0.7s ease; }
+    .reveal.visible { opacity:1; transform:none; }
+
+    @media (max-width:900px) {
+      .hero-inner { grid-template-columns:1fr; }
+      .hero-visual { display:none; }
+      .about-grid { grid-template-columns:1fr; gap:2.5rem; }
+      .skills-grid, .projects-grid { grid-template-columns:1fr 1fr; }
+      .blog-grid, .edu-grid { grid-template-columns:1fr 1fr; }
+      .stats-grid { grid-template-columns:1fr 1fr; }
+    }
+    @media (max-width:600px) {
+      .skills-grid,.projects-grid,.blog-grid,.cert-grid,.edu-grid { grid-template-columns:1fr; }
+      .stats-grid { grid-template-columns:1fr 1fr; }
+      body { cursor:auto; }
+      #cursor-dot,#cursor-ring { display:none; }
+    }
+  </style>
 </head>
+<body>
 
-<body class="index-page">
+  <div id="cursor-dot"></div>
+  <div id="cursor-ring"></div>
+  <canvas id="bg-canvas"></canvas>
 
-  <header id="header" class="header fixed-top">
+  <nav>
+    <a href="#hero" class="nav-logo">// jfrench</a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="blog.html">Blog</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
 
-    <div class="topbar d-flex align-items-center">
-      <div class="container d-flex justify-content-center justify-content-md-between">
-        <div class="contact-info d-flex align-items-center">
-          <i class="bi bi-envelope d-flex align-items-center"><a href="mailto:contact@example.com">info@jayfrench.cloud</a></i>
-          <i class="bi bi-phone d-flex align-items-center ms-4"><span>+1 785-829-1694</span></i>
-        </div>
-        <div class="social-links d-none d-md-flex align-items-center">
-          <a href="#" class="twitter"><i class="bi bi-twitter-x"></i></a>
-          <a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
-          <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
-          <a href="#" class="linkedin"><i class="bi bi-linkedin"></i></a>
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <p class="hero-eyebrow">☁ Based in Salina, KS · Open to Remote</p>
+        <h1 class="hero-name">Jonathan<br><span>French</span></h1>
+        <p class="hero-title">Network &amp; Cloud Infrastructure Engineer</p>
+        <p class="hero-desc">
+          AWS-certified cloud and network infrastructure engineer building scalable, secure, and highly available environments through infrastructure as code. Background in enterprise networking across healthcare and banking — now focused full-time on cloud.
+        </p>
+        <div class="hero-ctas">
+          <a href="#experience" class="btn-primary">View Experience</a>
+          <a href="#contact" class="btn-ghost">Get In Touch</a>
         </div>
       </div>
-    </div><!-- End Top Bar -->
-
-    <div class="branding d-flex align-items-center">
-
-      <div class="container position-relative d-flex align-items-center justify-content-between">
-        <a href="index.html" class="logo d-flex align-items-center">
-          <!-- Uncomment the line below if you also wish to use an image logo -->
-          <!-- <img src="assets/img/logo.png" alt=""> -->
-          <h1 class="sitename">Jay French</h1>
-        </a>
-
-        <nav id="navmenu" class="navmenu">
-          <ul>
-            <li><a href="#hero" class="active">Home</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#services">Services</a></li>
-            <li><a href="#portfolio">Portfolio</a></li>
-            <li><a href="#team">Team</a></li>
-            <li class="dropdown"><a href="#"><span>Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-              <ul>
-                <li><a href="#">Dropdown 1</a></li>
-                <li class="dropdown"><a href="#"><span>Deep Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                  <ul>
-                    <li><a href="#">Deep Dropdown 1</a></li>
-                    <li><a href="#">Deep Dropdown 2</a></li>
-                    <li><a href="#">Deep Dropdown 3</a></li>
-                    <li><a href="#">Deep Dropdown 4</a></li>
-                    <li><a href="#">Deep Dropdown 5</a></li>
-                  </ul>
-                </li>
-                <li><a href="#">Dropdown 2</a></li>
-                <li><a href="#">Dropdown 3</a></li>
-                <li><a href="#">Dropdown 4</a></li>
-              </ul>
-            </li>
-            <li><a href="#contact">Contact</a></li>
-          </ul>
-          <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
-        </nav>
+      <div class="hero-visual">
+        <div class="cloud-diagram">
+          <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.15"/>
+                <stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <circle cx="200" cy="200" r="160" fill="url(#glow1)"/>
+            <circle cx="200" cy="200" r="130" fill="none" stroke="rgba(0,212,255,0.07)" stroke-width="1" stroke-dasharray="4 6"/>
+            <circle cx="200" cy="200" r="90"  fill="none" stroke="rgba(0,212,255,0.1)"  stroke-width="1" stroke-dasharray="4 8"/>
+            <line x1="200" y1="200" x2="200" y2="75"  stroke="rgba(0,212,255,0.25)" stroke-width="1"/>
+            <line x1="200" y1="200" x2="310" y2="260" stroke="rgba(0,212,255,0.25)" stroke-width="1"/>
+            <line x1="200" y1="200" x2="90"  y2="260" stroke="rgba(0,212,255,0.25)" stroke-width="1"/>
+            <line x1="200" y1="200" x2="310" y2="130" stroke="rgba(0,102,255,0.2)"  stroke-width="1"/>
+            <line x1="200" y1="200" x2="90"  y2="130" stroke="rgba(0,102,255,0.2)"  stroke-width="1"/>
+            <line x1="200" y1="200" x2="200" y2="325" stroke="rgba(0,102,255,0.2)"  stroke-width="1"/>
+            <g transform="translate(200,75)"> <circle r="28" fill="#0d1421" stroke="rgba(0,212,255,0.5)" stroke-width="1.5"/><text y="1" text-anchor="middle" dominant-baseline="middle" font-size="18">☁️</text></g>
+            <g transform="translate(310,260)"><circle r="24" fill="#0d1421" stroke="rgba(0,212,255,0.35)" stroke-width="1.5"/><text y="1" text-anchor="middle" dominant-baseline="middle" font-size="15">🛡️</text></g>
+            <g transform="translate(90,260)"> <circle r="24" fill="#0d1421" stroke="rgba(0,212,255,0.35)" stroke-width="1.5"/><text y="1" text-anchor="middle" dominant-baseline="middle" font-size="15">🌐</text></g>
+            <g transform="translate(310,130)"><circle r="20" fill="#0d1421" stroke="rgba(0,102,255,0.4)"  stroke-width="1.5"/><text y="1" text-anchor="middle" dominant-baseline="middle" font-size="13">📦</text></g>
+            <g transform="translate(90,130)"> <circle r="20" fill="#0d1421" stroke="rgba(0,102,255,0.4)"  stroke-width="1.5"/><text y="1" text-anchor="middle" dominant-baseline="middle" font-size="13">⚙️</text></g>
+            <g transform="translate(200,325)"><circle r="20" fill="#0d1421" stroke="rgba(0,102,255,0.4)"  stroke-width="1.5"/><text y="1" text-anchor="middle" dominant-baseline="middle" font-size="13">📊</text></g>
+            <circle cx="200" cy="200" r="42" fill="#0d1421" stroke="rgba(0,212,255,0.6)" stroke-width="2"/>
+            <circle cx="200" cy="200" r="34" fill="rgba(0,212,255,0.04)" stroke="rgba(0,212,255,0.2)" stroke-width="1"/>
+            <text x="200" y="197" text-anchor="middle" dominant-baseline="middle" font-family="'DM Mono',monospace" font-size="9" fill="rgba(0,212,255,0.7)" letter-spacing="1">AWS</text>
+            <text x="200" y="210" text-anchor="middle" dominant-baseline="middle" font-family="'DM Mono',monospace" font-size="9" fill="rgba(0,212,255,0.7)" letter-spacing="1">INFRA</text>
+            <circle cx="200" cy="200" r="50" fill="none" stroke="rgba(0,212,255,0.25)" stroke-width="1.5">
+              <animate attributeName="r" values="46;80;46" dur="3s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0.5;0;0.5" dur="3s" repeatCount="indefinite"/>
+            </circle>
+            <text x="200" y="44"  text-anchor="middle" font-family="'DM Mono',monospace" font-size="8" fill="rgba(0,212,255,0.5)">EC2 / VPC</text>
+            <text x="338" y="264" font-family="'DM Mono',monospace" font-size="8" fill="rgba(0,212,255,0.5)">IAM / S3</text>
+            <text x="22"  y="264" font-family="'DM Mono',monospace" font-size="8" fill="rgba(0,212,255,0.5)">Networking</text>
+            <text x="318" y="127" font-family="'DM Mono',monospace" font-size="8" fill="rgba(0,102,255,0.7)">Terraform</text>
+            <text x="18"  y="127" font-family="'DM Mono',monospace" font-size="8" fill="rgba(0,102,255,0.7)">Automation</text>
+            <text x="164" y="346" font-family="'DM Mono',monospace" font-size="8" fill="rgba(0,102,255,0.7)">CloudWatch</text>
+          </svg>
+        </div>
       </div>
-
     </div>
+  </section>
 
-  </header>
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat reveal"><span class="stat-num" data-target="2">0</span><span class="stat-label">Years in Cloud &amp; Networking</span></div>
+        <div class="stat reveal"><span class="stat-num" data-target="150">0</span><span class="stat-label">Enterprise Users Supported</span></div>
+        <div class="stat reveal"><span class="stat-num" data-target="5">0</span><span class="stat-label">Active Certifications</span></div>
+        <div class="stat reveal"><span class="stat-num" data-target="3">0</span><span class="stat-label">AWS Certs (2 Earned + 1 Target)</span></div>
+      </div>
+    </div>
+  </div>
 
-  <main class="main">
-
-    <!-- Hero Section -->
-    <section id="hero" class="hero section dark-background">
-
-      <img src="assets/img/hero-bg.jpg" alt="" data-aos="fade-in">
-
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
-        <div class="row justify-content-start">
-          <div class="col-lg-8">
-            <h2>Welcome</h2>
-            <p>Cloud just got easier.</p>
-            <a href="#about" class="btn-get-started">Contact Me</a>
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-text reveal">
+          <div class="section-header">
+            <p class="section-label">About Me</p>
+            <h2 class="section-title">Infrastructure engineer with roots in the network layer</h2>
+          </div>
+          <p>I'm a Cloud Infrastructure Engineer with hands-on experience designing, automating, and supporting <strong>AWS environments using Terraform and Linux-based systems</strong>. My background spans enterprise networking and systems administration across healthcare and banking — environments where reliability isn't optional.</p>
+          <p>I specialize in <strong>infrastructure as code, repeatable deployments, and operational efficiency</strong>. If something is done more than twice, it should be automated. I'm actively advancing toward professional-level AWS architecture and DevOps certifications, with CKA and AWS DevOps Professional on the roadmap for 2026.</p>
+          <p>Currently working as a <strong>Network Technician at Salina Regional Health Center</strong> while contracting as a cloud infrastructure engineer for IronClad Verify — and actively seeking full-time cloud and DevOps engineering roles.</p>
+        </div>
+        <div class="reveal">
+          <div class="section-header">
+            <p class="section-label">Certifications</p>
+            <h2 class="section-title" style="font-size:1.6rem;">Credentials &amp; in-progress</h2>
+          </div>
+          <div class="cert-grid">
+            <div class="cert-card">
+              <span class="cert-icon">🟠</span>
+              <div>
+                <div class="cert-name">AWS Solutions Architect – Associate</div>
+                <span class="cert-badge">SAA-C03 · 2025</span>
+              </div>
+            </div>
+            <div class="cert-card">
+              <span class="cert-icon">🟠</span>
+              <div>
+                <div class="cert-name">AWS Certified Developer – Associate</div>
+                <span class="cert-badge">DVA-C02 · 2025</span>
+              </div>
+            </div>
+            <div class="cert-card">
+              <span class="cert-icon">🔵</span>
+              <div>
+                <div class="cert-name">CompTIA Security+</div>
+                <span class="cert-badge">2024</span>
+              </div>
+            </div>
+            <div class="cert-card">
+              <span class="cert-icon">🔵</span>
+              <div>
+                <div class="cert-name">CompTIA Network+</div>
+                <span class="cert-badge">2024</span>
+              </div>
+            </div>
+            <div class="cert-card">
+              <span class="cert-icon">🔵</span>
+              <div>
+                <div class="cert-name">CompTIA A+</div>
+                <span class="cert-badge">2024</span>
+              </div>
+            </div>
+            <div class="cert-card upcoming">
+              <span class="cert-icon">🎯</span>
+              <div>
+                <div class="cert-name">AWS SA Pro · CKA · AWS DevOps Pro</div>
+                <span class="cert-badge soon">Active Study · 2026</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+    </div>
+  </section>
 
-    </section><!-- /Hero Section -->
-
-    <!-- About Section -->
-    <section id="about" class="about section">
-
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <span>About Me<br></span>
-        <h2>About Me<br></h2>
-        <p></p>
-      </div><!-- End Section Title -->
-
-      <div class="container">
-
-        <div class="row gy-4">
-
-          <div class="col-lg-6 order-1 order-lg-2" data-aos="fade-up" data-aos-delay="100">
-            <img src="assets/img/about.jpg" class="img-fluid" alt="">
+  <!-- SKILLS -->
+  <section id="skills">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label">Tech Stack</p>
+        <h2 class="section-title">Tools &amp; Technologies</h2>
+      </div>
+      <div class="skills-grid">
+        <div class="skill-category reveal">
+          <div class="skill-cat-icon">☁️</div>
+          <div class="skill-cat-title">AWS Cloud Platform</div>
+          <div class="skill-tags">
+            <span class="skill-tag">EC2</span><span class="skill-tag">VPC</span><span class="skill-tag">IAM</span>
+            <span class="skill-tag">S3</span><span class="skill-tag">Route 53</span><span class="skill-tag">RDS</span>
+            <span class="skill-tag">Lambda</span><span class="skill-tag">CloudWatch</span><span class="skill-tag">CloudFront</span>
           </div>
+        </div>
+        <div class="skill-category reveal">
+          <div class="skill-cat-icon">⚙️</div>
+          <div class="skill-cat-title">Infrastructure as Code</div>
+          <div class="skill-tags">
+            <span class="skill-tag">Terraform</span><span class="skill-tag">Terraform Modules</span>
+            <span class="skill-tag">CloudFormation</span><span class="skill-tag">State Management</span>
+            <span class="skill-tag">IaC Workflows</span>
+          </div>
+        </div>
+        <div class="skill-category reveal">
+          <div class="skill-cat-icon">🌐</div>
+          <div class="skill-cat-title">Networking</div>
+          <div class="skill-tags">
+            <span class="skill-tag">TCP/IP</span><span class="skill-tag">VLANs</span><span class="skill-tag">Subnetting</span>
+            <span class="skill-tag">Routing</span><span class="skill-tag">Wireless 802.11</span>
+            <span class="skill-tag">Network Segmentation</span><span class="skill-tag">Troubleshooting</span>
+          </div>
+        </div>
+        <div class="skill-category reveal">
+          <div class="skill-cat-icon">🖥️</div>
+          <div class="skill-cat-title">Operating Systems</div>
+          <div class="skill-tags">
+            <span class="skill-tag">Linux CLI</span><span class="skill-tag">Linux Administration</span>
+            <span class="skill-tag">Windows Server</span>
+          </div>
+        </div>
+        <div class="skill-category reveal">
+          <div class="skill-cat-icon">💻</div>
+          <div class="skill-cat-title">Automation &amp; Development</div>
+          <div class="skill-tags">
+            <span class="skill-tag">Python</span><span class="skill-tag">Bash / Shell</span>
+            <span class="skill-tag">Infrastructure Automation</span><span class="skill-tag">CI/CD Concepts</span>
+          </div>
+        </div>
+        <div class="skill-category reveal">
+          <div class="skill-cat-icon">🔐</div>
+          <div class="skill-cat-title">Security &amp; Access Control</div>
+          <div class="skill-tags">
+            <span class="skill-tag">IAM Least Privilege</span><span class="skill-tag">Subnet Segmentation</span>
+            <span class="skill-tag">Security Patching</span><span class="skill-tag">Change Management</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-          <div class="col-lg-6 order-2 order-lg-1 content" data-aos="fade-up" data-aos-delay="200">
-            <h3>Driven Technologist with a Passion for Cloud Innovation</h3>
-            <p class="fst-italic">
-              I’m a self-directed learner and builder, focused on mastering cloud architecture and automation. With a background in IT and a growing portfolio of AWS projects, I’m building real solutions while engineering my career toward becoming a respected cloud expert.
-            </p>
+  <!-- EXPERIENCE -->
+  <section id="experience">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label">Work History</p>
+        <h2 class="section-title">Career Timeline</h2>
+      </div>
+      <div class="timeline">
+
+        <div class="timeline-item reveal">
+          <div class="timeline-date">Oct 2025 — Present</div>
+          <div class="timeline-role">Cloud Infrastructure Engineer</div>
+          <div class="timeline-company">IronClad Verify · Remote, USA &nbsp;·&nbsp; Contract (Part Time)</div>
+          <div class="timeline-desc">
             <ul>
-              <li><i class="bi bi-check-circle"></i> <span>Always learning, always building—whether it’s automating infrastructure with Terraform, deploying CI/CD pipelines, or creating scalable solutions with AWS services.</span></li>
-              <li><i class="bi bi-check-circle"></i> <span>Passionate about knowledge-sharing and community, I use my journey to inspire others breaking into tech.</span></li>
-              <li><i class="bi bi-check-circle"></i> <span>I balance hands-on work, technical content creation, and freelance IT, helping others stay connected, secure, and cloud-ready.</span></li>
+              <li>Designed and deployed production AWS infrastructure using Terraform to support backend application environments across isolated development and testing environments</li>
+              <li>Built reusable Terraform modules for VPC, EC2, IAM, and S3 resources — enabling repeatable deployments and reducing manual provisioning effort</li>
+              <li>Implemented IaC workflows with structured state management to ensure consistent environment provisioning</li>
+              <li>Designed network segmentation using public and private subnets to support secure application architecture</li>
+              <li>Applied IAM least-privilege principles to control service and user access across environments</li>
             </ul>
-            <a href="#" class="read-more"><span>Read More</span><i class="bi bi-arrow-right"></i></a>
           </div>
-
-        </div>
-
-      </div>
-
-    </section><!-- /About Section -->
-
-    <!-- Cards Section -->
-    <section id="cards" class="cards section">
-
-      <div class="container">
-
-        <div class="row no-gutters">
-
-          <div class="col-lg-4 col-md-6 card" data-aos="fade-up" data-aos-delay="100">
-            <span>01</span>
-            <h4>Pick a Service</h4>
-            <p>Focus on one AWS service each week.</p>
-          </div><!-- End Card Item -->
-
-          <div class="col-lg-4 col-md-6 card" data-aos="fade-up" data-aos-delay="200">
-            <span>02</span>
-            <h4>Study the Docs</h4>
-            <p>Skim official docs and tutorials for core concepts.</p>
-          </div><!-- End Card Item -->
-
-          <div class="col-lg-4 col-md-6 card" data-aos="fade-up" data-aos-delay="300">
-            <span>03</span>
-            <h4>Build a Mini Project</h4>
-            <p>Apply what you learned in a hands-on project.</p>
-          </div><!-- End Card Item -->
-
-          <div class="col-lg-4 col-md-6 card" data-aos="fade-up" data-aos-delay="400">
-            <span>04</span>
-            <h4>Write About It</h4>
-            <p>Summarize the build on LinkedIn or your blog.</p>
-          </div><!-- End Card Item -->
-
-          <div class="col-lg-4 col-md-6 card" data-aos="fade-up" data-aos-delay="400">
-            <span>05</span>
-            <h4>Automate with Terraform or Similar</h4>
-            <p>Recreate the project using IaC.</p>
-          </div><!-- End Card Item -->
-
-          <div class="col-lg-4 col-md-6 card" data-aos="fade-up" data-aos-delay="600">
-            <span>06</span>
-            <h4>Teach It Forward</h4>
-            <p>Create a short video or post to help others learn.</p>
-          </div><!-- End Card Item -->
-
-        </div>
-
-      </div>
-
-    </section><!-- /Cards Section -->
-
-    <!-- Clients Section -->
-    <section id="clients" class="clients section light-background">
-
-      <div class="container">
-
-        <div class="swiper init-swiper">
-          <script type="application/json" class="swiper-config">
-            {
-              "loop": true,
-              "speed": 600,
-              "autoplay": {
-                "delay": 5000
-              },
-              "slidesPerView": "auto",
-              "pagination": {
-                "el": ".swiper-pagination",
-                "type": "bullets",
-                "clickable": true
-              },
-              "breakpoints": {
-                "320": {
-                  "slidesPerView": 2,
-                  "spaceBetween": 40
-                },
-                "480": {
-                  "slidesPerView": 3,
-                  "spaceBetween": 60
-                },
-                "640": {
-                  "slidesPerView": 4,
-                  "spaceBetween": 80
-                },
-                "992": {
-                  "slidesPerView": 6,
-                  "spaceBetween": 120
-                }
-              }
-            }
-          </script>
-          <div class="swiper-wrapper align-items-center">
-            <div class="swiper-slide"><img src="assets/img/clients/client-1.png" class="img-fluid" alt=""></div> <!-- Replace with AWS Logo -->
-            <div class="swiper-slide"><img src="assets/img/clients/client-2.png" class="img-fluid" alt=""></div> <!-- Replace with Terraform Logo -->
-            <div class="swiper-slide"><img src="assets/img/clients/client-3.png" class="img-fluid" alt=""></div> <!-- Replace with Python Logo -->
-            <div class="swiper-slide"><img src="assets/img/clients/client-4.png" class="img-fluid" alt=""></div> <!-- Replace with CompTIA Logo -->
-            <div class="swiper-slide"><img src="assets/img/clients/client-5.png" class="img-fluid" alt=""></div> <!-- Replace with Kubernetes Logo -->
-            <div class="swiper-slide"><img src="assets/img/clients/client-6.png" class="img-fluid" alt=""></div> <!-- Replace with Azure Logo -->
-            <div class="swiper-slide"><img src="assets/img/clients/client-7.png" class="img-fluid" alt=""></div> <!-- Replace with GCP Logo -->
-            <div class="swiper-slide"><img src="assets/img/clients/client-8.png" class="img-fluid" alt=""></div> <!-- Replace with Personal Logo -->
+          <div class="timeline-tags">
+            <span class="timeline-tag">AWS</span><span class="timeline-tag">Terraform</span><span class="timeline-tag">VPC</span>
+            <span class="timeline-tag">EC2</span><span class="timeline-tag">IAM</span><span class="timeline-tag">S3</span>
           </div>
         </div>
 
-      </div>
-
-    </section><!-- /Clients Section -->
-
-    <!-- Services Section -->
-    <section id="services" class="services section">
-
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <span>Services</span>
-        <h2>Services</h2>
-        <p></p>
-      </div><!-- End Section Title -->
-
-      <div class="container">
-
-        <div class="row gy-4">
-
-          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
-            <div class="service-item  position-relative">
-              <div class="icon">
-                <i class="bi bi-activity"></i>
-              </div>
-              <a href="#" class="stretched-link">
-                <h3>Infrastructure as Code</h3>
-              </a>
-              <p>Build and manage scalable cloud environments using Terraform.</p>
-            </div>
-          </div><!-- End Service Item -->
-
-          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
-            <div class="service-item position-relative">
-              <div class="icon">
-                <i class="bi bi-broadcast"></i>
-              </div>
-              <a href="#" class="stretched-link">
-                <h3>CI/CD Pipelines</h3>
-              </a>
-              <p>Automate application delivery with GitHub Actions and AWS services.</p>
-            </div>
-          </div><!-- End Service Item -->
-
-          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
-            <div class="service-item position-relative">
-              <div class="icon">
-                <i class="bi bi-easel"></i>
-              </div>
-              <a href="#" class="stretched-link">
-                <h3>Identity & Access Management</h3>
-              </a>
-              <p>Control permissions and secure cloud assets with IAM best practices.</p>
-            </div>
-          </div><!-- End Service Item -->
-
-          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
-            <div class="service-item position-relative">
-              <div class="icon">
-                <i class="bi bi-bounding-box-circles"></i>
-              </div>
-              <a href="#" class="stretched-link">
-                <h3>Serverless Applications</h3>
-              </a>
-              <p>Develop lightweight, cost-efficient apps using Lambda and API Gateway.</p>
-              <a href="#" class="stretched-link"></a>
-            </div>
-          </div><!-- End Service Item -->
-
-          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
-            <div class="service-item position-relative">
-              <div class="icon">
-                <i class="bi bi-calendar4-week"></i>
-              </div>
-              <a href="#" class="stretched-link">
-                <h3>Static Site Hosting</h3>
-              </a>
-              <p>Deploy secure, performant websites with S3, CloudFront, and Route 53.</p>
-              <a href="#" class="stretched-link"></a>
-            </div>
-          </div><!-- End Service Item -->
-
-          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="600">
-            <div class="service-item position-relative">
-              <div class="icon">
-                <i class="bi bi-chat-square-text"></i>
-              </div>
-              <a href="#" class="stretched-link">
-                <h3>Monitoring & Logging</h3>
-              </a>
-              <p>Implement CloudWatch and custom logging solutions for observability.</p>
-              <a href="#" class="stretched-link"></a>
-            </div>
-          </div><!-- End Service Item -->
-
-        </div>
-
-      </div>
-
-    </section><!-- /Services Section -->
-
-    <!-- Call To Action Section -->
-    <section id="call-to-action" class="call-to-action section dark-background">
-
-      <img src="assets/img/cta-bg.jpg" alt="">
-
-      <div class="container">
-        <div class="row justify-content-center" data-aos="zoom-in" data-aos-delay="100">
-          <div class="col-xl-10">
-            <div class="text-center">
-              <h3>Let’s Build Something Smart Together</h3>
-              <p>Whether you're hiring a cloud engineer, need help automating your infrastructure, or looking for reliable IT expertise, I'm ready to help.
-                Explore my work, see what I’ve built, and let’s talk about how I can bring value to your team or project.</p>
-              <a class="cta-btn" href="#">Let's Connect</a>
-            </div>
+        <div class="timeline-item reveal">
+          <div class="timeline-date">Oct 2024 — Present</div>
+          <div class="timeline-role">Network Technician</div>
+          <div class="timeline-company">Salina Regional Health Center · Salina, KS</div>
+          <div class="timeline-desc">
+            <ul>
+              <li>Deploy and maintain enterprise switching and wireless infrastructure supporting hospital operations and mission-critical healthcare systems</li>
+              <li>Support network infrastructure serving hundreds of clinical and administrative users across wired and wireless environments</li>
+              <li>Perform infrastructure upgrades and hardware migrations to improve network performance, scalability, and operational reliability</li>
+              <li>Troubleshoot complex connectivity issues using structured diagnostic methodologies, minimizing downtime in production environments</li>
+              <li>Work within live production environments requiring careful change management and minimal service disruption</li>
+            </ul>
           </div>
-        </div>
-      </div>
-
-    </section><!-- /Call To Action Section -->
-
-    <!-- Portfolio Section -->
-    <section id="portfolio" class="portfolio section">
-
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <span>Portfolio</span>
-        <h2>Portfolio</h2>
-        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
-      </div><!-- End Section Title -->
-
-      <div class="container">
-
-        <div class="isotope-layout" data-default-filter="*" data-layout="masonry" data-sort="original-order">
-
-          <ul class="portfolio-filters isotope-filters" data-aos="fade-up" data-aos-delay="100">
-            <li data-filter="*" class="filter-active">All</li>
-            <li data-filter=".filter-app">App</li>
-            <li data-filter=".filter-product">Card</li>
-            <li data-filter=".filter-branding">Web</li>
-          </ul><!-- End Portfolio Filters -->
-
-          <div class="row gy-4 isotope-container" data-aos="fade-up" data-aos-delay="200">
-
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app">
-              <img src="assets/img/masonry-portfolio/masonry-portfolio-1.jpg" class="img-fluid" alt="">
-              <div class="portfolio-info">
-                <h4>App 1</h4>
-                <p>Lorem ipsum, dolor sit</p>
-                <a href="assets/img/masonry-portfolio/masonry-portfolio-1.jpg" title="App 1" data-gallery="portfolio-gallery-app" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
-                <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
-              </div>
-            </div><!-- End Portfolio Item -->
-
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-product">
-              <img src="assets/img/masonry-portfolio/masonry-portfolio-2.jpg" class="img-fluid" alt="">
-              <div class="portfolio-info">
-                <h4>Product 1</h4>
-                <p>Lorem ipsum, dolor sit</p>
-                <a href="assets/img/masonry-portfolio/masonry-portfolio-2.jpg" title="Product 1" data-gallery="portfolio-gallery-product" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
-                <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
-              </div>
-            </div><!-- End Portfolio Item -->
-
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding">
-              <img src="assets/img/masonry-portfolio/masonry-portfolio-3.jpg" class="img-fluid" alt="">
-              <div class="portfolio-info">
-                <h4>Branding 1</h4>
-                <p>Lorem ipsum, dolor sit</p>
-                <a href="assets/img/masonry-portfolio/masonry-portfolio-3.jpg" title="Branding 1" data-gallery="portfolio-gallery-branding" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
-                <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
-              </div>
-            </div><!-- End Portfolio Item -->
-
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app">
-              <img src="assets/img/masonry-portfolio/masonry-portfolio-4.jpg" class="img-fluid" alt="">
-              <div class="portfolio-info">
-                <h4>App 2</h4>
-                <p>Lorem ipsum, dolor sit</p>
-                <a href="assets/img/masonry-portfolio/masonry-portfolio-4.jpg" title="App 2" data-gallery="portfolio-gallery-app" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
-                <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
-              </div>
-            </div><!-- End Portfolio Item -->
-
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-product">
-              <img src="assets/img/masonry-portfolio/masonry-portfolio-5.jpg" class="img-fluid" alt="">
-              <div class="portfolio-info">
-                <h4>Product 2</h4>
-                <p>Lorem ipsum, dolor sit</p>
-                <a href="assets/img/masonry-portfolio/masonry-portfolio-5.jpg" title="Product 2" data-gallery="portfolio-gallery-product" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
-                <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
-              </div>
-            </div><!-- End Portfolio Item -->
-
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding">
-              <img src="assets/img/masonry-portfolio/masonry-portfolio-6.jpg" class="img-fluid" alt="">
-              <div class="portfolio-info">
-                <h4>Branding 2</h4>
-                <p>Lorem ipsum, dolor sit</p>
-                <a href="assets/img/masonry-portfolio/masonry-portfolio-6.jpg" title="Branding 2" data-gallery="portfolio-gallery-branding" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
-                <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
-              </div>
-            </div><!-- End Portfolio Item -->
-
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app">
-              <img src="assets/img/masonry-portfolio/masonry-portfolio-7.jpg" class="img-fluid" alt="">
-              <div class="portfolio-info">
-                <h4>App 3</h4>
-                <p>Lorem ipsum, dolor sit</p>
-                <a href="assets/img/masonry-portfolio/masonry-portfolio-7.jpg" title="App 3" data-gallery="portfolio-gallery-app" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
-                <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
-              </div>
-            </div><!-- End Portfolio Item -->
-
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-product">
-              <img src="assets/img/masonry-portfolio/masonry-portfolio-8.jpg" class="img-fluid" alt="">
-              <div class="portfolio-info">
-                <h4>Product 3</h4>
-                <p>Lorem ipsum, dolor sit</p>
-                <a href="assets/img/masonry-portfolio/masonry-portfolio-8.jpg" title="Product 3" data-gallery="portfolio-gallery-product" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
-                <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
-              </div>
-            </div><!-- End Portfolio Item -->
-
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding">
-              <img src="assets/img/masonry-portfolio/masonry-portfolio-9.jpg" class="img-fluid" alt="">
-              <div class="portfolio-info">
-                <h4>Branding 3</h4>
-                <p>Lorem ipsum, dolor sit</p>
-                <a href="assets/img/masonry-portfolio/masonry-portfolio-9.jpg" title="Branding 2" data-gallery="portfolio-gallery-branding" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
-                <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
-              </div>
-            </div><!-- End Portfolio Item -->
-
-          </div><!-- End Portfolio Container -->
-
-        </div>
-
-      </div>
-
-    </section><!-- /Portfolio Section -->
-
-    <!-- Pricing Section -->
-    <section id="pricing" class="pricing section">
-
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <span>Pricing</span>
-        <h2>Pricing</h2>
-        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
-      </div><!-- End Section Title -->
-
-      <div class="container">
-
-        <div class="row g-4 g-lg-0">
-
-          <div class="col-lg-4" data-aos="zoom-in" data-aos-delay="100">
-            <div class="pricing-item">
-              <h3>Free Plan</h3>
-              <h4><sup>$</sup>0<span> / month</span></h4>
-              <ul>
-                <li><i class="bi bi-check"></i> <span>Quam adipiscing vitae proin</span></li>
-                <li><i class="bi bi-check"></i> <span>Nec feugiat nisl pretium</span></li>
-                <li><i class="bi bi-check"></i> <span>Nulla at volutpat diam uteera</span></li>
-                <li class="na"><i class="bi bi-x"></i> <span>Pharetra massa massa ultricies</span></li>
-                <li class="na"><i class="bi bi-x"></i> <span>Massa ultricies mi quis hendrerit</span></li>
-              </ul>
-              <div class="text-center"><a href="#" class="buy-btn">Buy Now</a></div>
-            </div>
-          </div><!-- End Pricing Item -->
-
-          <div class="col-lg-4 featured" data-aos="zoom-in" data-aos-delay="200">
-            <div class="pricing-item">
-              <h3>Business Plan</h3>
-              <h4><sup>$</sup>29<span> / month</span></h4>
-              <ul>
-                <li><i class="bi bi-check"></i> <span>Quam adipiscing vitae proin</span></li>
-                <li><i class="bi bi-check"></i> <span>Nec feugiat nisl pretium</span></li>
-                <li><i class="bi bi-check"></i> <span>Nulla at volutpat diam uteera</span></li>
-                <li><i class="bi bi-check"></i> <span>Pharetra massa massa ultricies</span></li>
-                <li><i class="bi bi-check"></i> <span>Massa ultricies mi quis hendrerit</span></li>
-              </ul>
-              <div class="text-center"><a href="#" class="buy-btn">Buy Now</a></div>
-            </div>
-          </div><!-- End Pricing Item -->
-
-          <div class="col-lg-4" data-aos="zoom-in" data-aos-delay="100">
-            <div class="pricing-item">
-              <h3>Developer Plan</h3>
-              <h4><sup>$</sup>49<span> / month</span></h4>
-              <ul>
-                <li><i class="bi bi-check"></i> <span>Quam adipiscing vitae proin</span></li>
-                <li><i class="bi bi-check"></i> <span>Nec feugiat nisl pretium</span></li>
-                <li><i class="bi bi-check"></i> <span>Nulla at volutpat diam uteera</span></li>
-                <li><i class="bi bi-check"></i> <span>Pharetra massa massa ultricies</span></li>
-                <li><i class="bi bi-check"></i> <span>Massa ultricies mi quis hendrerit</span></li>
-              </ul>
-              <div class="text-center"><a href="#" class="buy-btn">Buy Now</a></div>
-            </div>
-          </div><!-- End Pricing Item -->
-
-        </div>
-
-      </div>
-
-    </section><!-- /Pricing Section -->
-
-    <!-- Team Section -->
-    <section id="team" class="team section">
-
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <span>Team</span>
-        <h2>Team</h2>
-        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
-      </div><!-- End Section Title -->
-
-      <div class="container">
-
-        <div class="row">
-
-          <div class="col-lg-4 col-md-6 d-flex" data-aos="fade-up" data-aos-delay="100">
-            <div class="member">
-              <img src="assets/img/team/team-1.jpg" class="img-fluid" alt="">
-              <div class="member-content">
-                <h4>Walter White</h4>
-                <span>Web Development</span>
-                <p>
-                  Magni qui quod omnis unde et eos fuga et exercitationem. Odio veritatis perspiciatis quaerat qui aut aut aut
-                </p>
-                <div class="social">
-                  <a href=""><i class="bi bi-twitter-x"></i></a>
-                  <a href=""><i class="bi bi-facebook"></i></a>
-                  <a href=""><i class="bi bi-instagram"></i></a>
-                  <a href=""><i class="bi bi-linkedin"></i></a>
-                </div>
-              </div>
-            </div>
-          </div><!-- End Team Member -->
-
-          <div class="col-lg-4 col-md-6 d-flex" data-aos="fade-up" data-aos-delay="200">
-            <div class="member">
-              <img src="assets/img/team/team-2.jpg" class="img-fluid" alt="">
-              <div class="member-content">
-                <h4>Sarah Jhinson</h4>
-                <span>Marketing</span>
-                <p>
-                  Repellat fugiat adipisci nemo illum nesciunt voluptas repellendus. In architecto rerum rerum temporibus
-                </p>
-                <div class="social">
-                  <a href=""><i class="bi bi-twitter-x"></i></a>
-                  <a href=""><i class="bi bi-facebook"></i></a>
-                  <a href=""><i class="bi bi-instagram"></i></a>
-                  <a href=""><i class="bi bi-linkedin"></i></a>
-                </div>
-              </div>
-            </div>
-          </div><!-- End Team Member -->
-
-          <div class="col-lg-4 col-md-6 d-flex" data-aos="fade-up" data-aos-delay="300">
-            <div class="member">
-              <img src="assets/img/team/team-3.jpg" class="img-fluid" alt="">
-              <div class="member-content">
-                <h4>William Anderson</h4>
-                <span>Content</span>
-                <p>
-                  Voluptas necessitatibus occaecati quia. Earum totam consequuntur qui porro et laborum toro des clara
-                </p>
-                <div class="social">
-                  <a href=""><i class="bi bi-twitter-x"></i></a>
-                  <a href=""><i class="bi bi-facebook"></i></a>
-                  <a href=""><i class="bi bi-instagram"></i></a>
-                  <a href=""><i class="bi bi-linkedin"></i></a>
-                </div>
-              </div>
-            </div>
-          </div><!-- End Team Member -->
-
-        </div>
-
-      </div>
-
-    </section><!-- /Team Section -->
-
-    <!-- Contact Section -->
-    <section id="contact" class="contact section">
-
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <span>Contact</span>
-        <h2>Contact</h2>
-        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
-      </div><!-- End Section Title -->
-
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
-
-        <div class="row gy-4">
-
-          <div class="col-lg-6">
-            <div class="info-item d-flex flex-column justify-content-center align-items-center" data-aos="fade-up" data-aos-delay="200">
-              <i class="bi bi-geo-alt"></i>
-              <h3>Address</h3>
-              <p>A108 Adam Street, New York, NY 535022</p>
-            </div>
-          </div><!-- End Info Item -->
-
-          <div class="col-lg-3 col-md-6">
-            <div class="info-item d-flex flex-column justify-content-center align-items-center" data-aos="fade-up" data-aos-delay="300">
-              <i class="bi bi-telephone"></i>
-              <h3>Call Us</h3>
-              <p>+1 5589 55488 55</p>
-            </div>
-          </div><!-- End Info Item -->
-
-          <div class="col-lg-3 col-md-6">
-            <div class="info-item d-flex flex-column justify-content-center align-items-center" data-aos="fade-up" data-aos-delay="400">
-              <i class="bi bi-envelope"></i>
-              <h3>Email Us</h3>
-              <p>info@example.com</p>
-            </div>
-          </div><!-- End Info Item -->
-
-        </div>
-
-        <div class="row gy-4 mt-1">
-          <div class="col-lg-6" data-aos="fade-up" data-aos-delay="300">
-            <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d48389.78314118045!2d-74.006138!3d40.710059!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25a22a3bda30d%3A0xb89d1fe6bc499443!2sDowntown%20Conference%20Center!5e0!3m2!1sen!2sus!4v1676961268712!5m2!1sen!2sus" frameborder="0" style="border:0; width: 100%; height: 400px;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-          </div><!-- End Google Maps -->
-
-          <div class="col-lg-6">
-            <form action="forms/contact.php" method="post" class="php-email-form" data-aos="fade-up" data-aos-delay="400">
-              <div class="row gy-4">
-
-                <div class="col-md-6">
-                  <input type="text" name="name" class="form-control" placeholder="Your Name" required="">
-                </div>
-
-                <div class="col-md-6 ">
-                  <input type="email" class="form-control" name="email" placeholder="Your Email" required="">
-                </div>
-
-                <div class="col-md-12">
-                  <input type="text" class="form-control" name="subject" placeholder="Subject" required="">
-                </div>
-
-                <div class="col-md-12">
-                  <textarea class="form-control" name="message" rows="6" placeholder="Message" required=""></textarea>
-                </div>
-
-                <div class="col-md-12 text-center">
-                  <div class="loading">Loading</div>
-                  <div class="error-message"></div>
-                  <div class="sent-message">Your message has been sent. Thank you!</div>
-
-                  <button type="submit">Send Message</button>
-                </div>
-
-              </div>
-            </form>
-          </div><!-- End Contact Form -->
-
-        </div>
-
-      </div>
-
-    </section><!-- /Contact Section -->
-
-  </main>
-
-  <footer id="footer" class="footer position-relative dark-background">
-
-    <div class="container footer-top">
-      <div class="row gy-4">
-        <div class="col-lg-4 col-md-6">
-          <div class="footer-about">
-            <a href="index.html" class="logo sitename">Day</a>
-            <div class="footer-contact pt-3">
-              <p>A108 Adam Street</p>
-              <p>New York, NY 535022</p>
-              <p class="mt-3"><strong>Phone:</strong> <span>+1 5589 55488 55</span></p>
-              <p><strong>Email:</strong> <span>info@example.com</span></p>
-            </div>
-            <div class="social-links d-flex mt-4">
-              <a href=""><i class="bi bi-twitter-x"></i></a>
-              <a href=""><i class="bi bi-facebook"></i></a>
-              <a href=""><i class="bi bi-instagram"></i></a>
-              <a href=""><i class="bi bi-linkedin"></i></a>
-            </div>
+          <div class="timeline-tags">
+            <span class="timeline-tag">Enterprise Switching</span><span class="timeline-tag">Wireless Infrastructure</span>
+            <span class="timeline-tag">Change Management</span><span class="timeline-tag">Healthcare IT</span>
           </div>
         </div>
 
-        <div class="col-lg-2 col-md-3 footer-links">
-          <h4>Useful Links</h4>
-          <ul>
-            <li><a href="#">Home</a></li>
-            <li><a href="#">About us</a></li>
-            <li><a href="#">Services</a></li>
-            <li><a href="#">Terms of service</a></li>
-            <li><a href="#">Privacy policy</a></li>
-          </ul>
-        </div>
-
-        <div class="col-lg-2 col-md-3 footer-links">
-          <h4>Our Services</h4>
-          <ul>
-            <li><a href="#">Web Design</a></li>
-            <li><a href="#">Web Development</a></li>
-            <li><a href="#">Product Management</a></li>
-            <li><a href="#">Marketing</a></li>
-            <li><a href="#">Graphic Design</a></li>
-          </ul>
-        </div>
-
-        <div class="col-lg-4 col-md-12 footer-newsletter">
-          <h4>Our Newsletter</h4>
-          <p>Subscribe to our newsletter and receive the latest news about our products and services!</p>
-          <form action="forms/newsletter.php" method="post" class="php-email-form">
-            <div class="newsletter-form"><input type="email" name="email"><input type="submit" value="Subscribe"></div>
-            <div class="loading">Loading</div>
-            <div class="error-message"></div>
-            <div class="sent-message">Your subscription request has been sent. Thank you!</div>
-          </form>
+        <div class="timeline-item reveal">
+          <div class="timeline-date">Aug 2023 — Oct 2024</div>
+          <div class="timeline-role">IT Systems Administrator</div>
+          <div class="timeline-company">The Bennington State Bank · Salina, KS</div>
+          <div class="timeline-desc">
+            <ul>
+              <li>Administered and maintained IT infrastructure supporting 150+ enterprise users across banking operations</li>
+              <li>Managed servers, network-connected systems, and core infrastructure to ensure high availability and reliability</li>
+              <li>Implemented system updates, patching, and maintenance procedures to improve security posture and reduce vulnerabilities</li>
+              <li>Troubleshot infrastructure, network, and system-level issues impacting business-critical banking operations</li>
+              <li>Supported infrastructure stability and uptime across production banking systems</li>
+            </ul>
+          </div>
+          <div class="timeline-tags">
+            <span class="timeline-tag">Windows Server</span><span class="timeline-tag">Systems Administration</span>
+            <span class="timeline-tag">Security Patching</span><span class="timeline-tag">Banking IT</span>
+          </div>
         </div>
 
       </div>
     </div>
+  </section>
 
-    <div class="container copyright text-center mt-4">
-      <p>© <span>Copyright</span> <strong class="px-1 sitename">Day</strong> <span>All Rights Reserved</span></p>
-      <div class="credits">
-        <!-- All the links in the footer should remain intact. -->
-        <!-- You can delete the links only if you've purchased the pro version. -->
-        <!-- Licensing information: https://bootstrapmade.com/license/ -->
-        <!-- Purchase the pro version with working PHP/AJAX contact form: [buy-url] -->
-        Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label">Work</p>
+        <h2 class="section-title">Featured Projects</h2>
+      </div>
+      <div class="projects-grid">
+        <div class="project-card reveal">
+          <div class="project-icon">🏗️</div>
+          <div class="project-title">Cloud Infrastructure Deployment</div>
+          <div class="project-desc">
+            <ul>
+              <li>Built and deployed production AWS infrastructure using Terraform — VPC, EC2, IAM, and S3</li>
+              <li>Implemented IaC workflows for fully repeatable, automated environment provisioning</li>
+              <li>Designed secure network architecture with public/private subnet segmentation</li>
+            </ul>
+          </div>
+          <div class="project-tags">
+            <span class="project-tag">AWS</span><span class="project-tag">Terraform</span>
+            <span class="project-tag">VPC</span><span class="project-tag">IAM</span><span class="project-tag">S3</span>
+          </div>
+        </div>
+        <div class="project-card reveal">
+          <div class="project-icon">🌐</div>
+          <div class="project-title">Cloud Networking &amp; Infra Labs</div>
+          <div class="project-desc">
+            <ul>
+              <li>Designed and deployed simulated enterprise network environments for routing, switching, and troubleshooting skills</li>
+              <li>Configured VLANs, routing protocols, and network segmentation against real-world enterprise scenarios</li>
+            </ul>
+          </div>
+          <div class="project-tags">
+            <span class="project-tag">VLANs</span><span class="project-tag">Routing</span>
+            <span class="project-tag">Network Design</span><span class="project-tag">Subnetting</span>
+          </div>
+        </div>
+        <div class="project-card reveal">
+          <div class="project-icon">⚙️</div>
+          <div class="project-title">Infrastructure Automation Workflows</div>
+          <div class="project-desc">
+            <ul>
+              <li>Developed Terraform and scripting-based automation to provision and manage infrastructure resources</li>
+              <li>Reduced manual provisioning through reusable module patterns and structured remote state</li>
+              <li>Built toward CI/CD-ready infrastructure pipeline patterns</li>
+            </ul>
+          </div>
+          <div class="project-tags">
+            <span class="project-tag">Terraform</span><span class="project-tag">Python</span>
+            <span class="project-tag">Bash</span><span class="project-tag">CI/CD</span>
+          </div>
+        </div>
       </div>
     </div>
+  </section>
 
+  <!-- EDUCATION -->
+  <section id="education">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label">Education</p>
+        <h2 class="section-title">Academic Background</h2>
+      </div>
+      <div class="edu-grid">
+        <div class="edu-card reveal">
+          <div class="edu-icon">🎓</div>
+          <div class="edu-degree">A.S. Information Technology</div>
+          <div class="edu-school">Full Sail University · Winter Park, FL</div>
+          <span class="edu-note">Completed</span>
+        </div>
+        <div class="edu-card reveal">
+          <div class="edu-icon">🎓</div>
+          <div class="edu-degree">B.S. Information Technology</div>
+          <div class="edu-school">Western Governors University · Millcreek, UT</div>
+          <span class="edu-note">Completed</span>
+        </div>
+        <div class="edu-card reveal">
+          <div class="edu-icon">📚</div>
+          <div class="edu-degree">M.S. Information Technology Management</div>
+          <div class="edu-school">Western Governors University · Millcreek, UT</div>
+          <span class="edu-note in-progress">Expected March 2026</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BLOG PREVIEW -->
+  <section id="blog">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label">Writing</p>
+        <h2 class="section-title">Latest Posts</h2>
+      </div>
+      <div class="blog-grid">
+        <a href="posts/TEMPLATE.html" class="blog-card reveal">
+          <div class="blog-card-accent"></div>
+          <div class="blog-card-body">
+            <div class="blog-meta">Coming Soon</div>
+            <div class="blog-card-title">Building Reusable Terraform Modules for AWS</div>
+            <div class="blog-excerpt">How I structured reusable VPC, EC2, IAM, and S3 modules that made environment provisioning repeatable and fast.</div>
+            <div class="blog-read-more">Stay tuned ↗</div>
+          </div>
+        </a>
+        <a href="posts/TEMPLATE.html" class="blog-card reveal">
+          <div class="blog-card-accent"></div>
+          <div class="blog-card-body">
+            <div class="blog-meta">Coming Soon</div>
+            <div class="blog-card-title">Network Engineering in Healthcare: Lessons from SRHC</div>
+            <div class="blog-excerpt">Change management, zero-downtime upgrades, and the reality of maintaining network infrastructure in a live hospital environment.</div>
+            <div class="blog-read-more">Stay tuned ↗</div>
+          </div>
+        </a>
+        <a href="posts/TEMPLATE.html" class="blog-card reveal">
+          <div class="blog-card-accent"></div>
+          <div class="blog-card-body">
+            <div class="blog-meta">Coming Soon</div>
+            <div class="blog-card-title">My Path to AWS SAA-C03: Study Strategy &amp; What Actually Matters</div>
+            <div class="blog-excerpt">A candid walkthrough of how I passed the AWS Solutions Architect Associate, what resources worked, and what I'd do differently.</div>
+            <div class="blog-read-more">Stay tuned ↗</div>
+          </div>
+        </a>
+      </div>
+      <div class="view-all reveal">
+        <a href="blog.html" class="btn-ghost">View All Posts</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="container">
+      <div class="contact-inner reveal">
+        <div class="section-header">
+          <p class="section-label">Contact</p>
+          <h2 class="section-title">Let's connect</h2>
+        </div>
+        <p class="contact-desc">
+          I'm actively seeking full-time cloud engineering and DevOps roles — remote preferred, open to hybrid.
+          Feel free to reach out directly or connect on GitHub.
+        </p>
+        <a href="mailto:jfrench@svdatasys.com" class="btn-primary">jfrench@svdatasys.com</a>
+        <div class="contact-links">
+          <a href="https://github.com" class="contact-link" target="_blank">🐙 GitHub</a>
+          <a href="tel:7857873097" class="contact-link">📞 (785) 787-3097</a>
+          <a href="jfrench032026Resume.pdf" class="contact-link" target="_blank">📄 Resume PDF</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2025 Jonathan French &nbsp;·&nbsp; Network &amp; Cloud Infrastructure Engineer &nbsp;·&nbsp; Salina, KS</p>
   </footer>
 
-  <!-- Scroll Top -->
-  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+  <script>
+    // Cursor
+    const dot=document.getElementById('cursor-dot'),ring=document.getElementById('cursor-ring');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+    (function a(){rx+=(mx-rx)*.15;ry+=(my-ry)*.15;dot.style.left=mx+'px';dot.style.top=my+'px';ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(a);})();
 
-  <!-- Preloader -->
-  <div id="preloader"></div>
+    // Canvas
+    const canvas=document.getElementById('bg-canvas'),ctx=canvas.getContext('2d');
+    let W,H,particles=[];
+    function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+    resize();window.addEventListener('resize',resize);
+    for(let i=0;i<70;i++)particles.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,r:Math.random()*1.5+.5});
+    function draw(){
+      ctx.clearRect(0,0,W,H);
+      for(let i=0;i<particles.length;i++)for(let j=i+1;j<particles.length;j++){const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<160){ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.strokeStyle=`rgba(0,180,255,${(1-d/160)*.25})`;ctx.lineWidth=.7;ctx.stroke();}}
+      for(const p of particles){ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle='rgba(0,212,255,0.6)';ctx.fill();p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;}
+      requestAnimationFrame(draw);
+    }
+    draw();
 
-  <!-- Vendor JS Files -->
-  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="assets/vendor/php-email-form/validate.js"></script>
-  <script src="assets/vendor/aos/aos.js"></script>
-  <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
-  <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
-  <script src="assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"></script>
-  <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+    // Scroll reveal
+    const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.1});
+    document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 
-  <!-- Main JS File -->
-  <script src="assets/js/main.js"></script>
-
+    // Counters
+    function animateCount(el){const target=parseInt(el.dataset.target),suffix=el.dataset.suffix||'',step=target/(1500/16);let c=0;const t=setInterval(()=>{c+=step;if(c>=target){c=target;clearInterval(t);}el.textContent=Math.floor(c)+suffix;},16);}
+    const cobs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){animateCount(e.target);cobs.unobserve(e.target);}}),{threshold:.5});
+    document.querySelectorAll('[data-target]').forEach(el=>cobs.observe(el));
+  </script>
 </body>
-
 </html>
