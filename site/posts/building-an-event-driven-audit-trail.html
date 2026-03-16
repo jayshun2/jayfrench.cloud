@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!--
+  ╔══════════════════════════════════════════════════════════════╗
+  ║           BLOG POST TEMPLATE — HOW TO USE                   ║
+  ╠══════════════════════════════════════════════════════════════╣
+  ║  1. Copy this file to /posts/your-post-slug.html            ║
+  ║  2. Update all fields marked with "EDIT:" below             ║
+  ║  3. Write your post content inside <article class="prose">  ║
+  ║  4. Add a link to blog.html in the posts grid               ║
+  ║  5. Optionally add a card to index.html blog preview        ╚══════════════════════════════════════════════════════════════╝
+  -->
+  <!-- EDIT: Page title -->
+  <title>Building an Event-Driven Audit Trail with S3 and Lambda — Jay French</title>
+  <!-- EDIT: SEO description -->
+  <meta name="description" content="A short description of this post for search engines and social sharing." />
+  <!-- EDIT: Open Graph tags for social sharing -->
+  <meta property="og:title" content="Your Post Title" />
+  <meta property="og:description" content="A short description for social sharing." />
+  <meta property="og:type" content="article" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Cabinet+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:        #070b12;
+      --bg2:       #0d1421;
+      --surface:   #141e2e;
+      --border:    rgba(255,255,255,0.06);
+      --primary:   #00d4ff;
+      --accent:    #0066ff;
+      --green:     #00ffaa;
+      --text:      #e8edf5;
+      --muted:     #6b7a94;
+      --font-display: 'Syne', sans-serif;
+      --font-body:    'Cabinet Grotesk', sans-serif;
+      --font-mono:    'DM Mono', monospace;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 16px; line-height: 1.6; overflow-x: hidden; cursor: none; }
+    #cursor-dot, #cursor-ring { position: fixed; top: 0; left: 0; border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%, -50%); }
+    #cursor-dot { width: 6px; height: 6px; background: var(--primary); }
+    #cursor-ring { width: 32px; height: 32px; border: 1.5px solid rgba(0,212,255,0.5); transition: width 0.25s, height 0.25s; }
+    #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1.25rem 2rem; display: flex; align-items: center; justify-content: space-between; background: rgba(7,11,18,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+    .nav-logo { font-family: var(--font-mono); font-size: 0.85rem; color: var(--primary); letter-spacing: 0.1em; text-decoration: none; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); text-decoration: none; letter-spacing: 0.08em; text-transform: uppercase; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--primary); }
+
+    /* PROGRESS BAR */
+    #progress-bar { position: fixed; top: 0; left: 0; height: 2px; background: linear-gradient(90deg, var(--primary), var(--accent)); z-index: 200; width: 0%; transition: width 0.1s; }
+
+    /* LAYOUT */
+    .post-wrapper { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 9rem 2rem 6rem; }
+
+    /* BREADCRUMB */
+    .breadcrumb { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); margin-bottom: 2.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .breadcrumb a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .breadcrumb a:hover { color: var(--primary); }
+    .breadcrumb span { color: var(--border); }
+
+    /* POST HEADER */
+    .post-header { margin-bottom: 3rem; }
+    .post-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .post-tag { font-family: var(--font-mono); font-size: 0.65rem; color: var(--accent); background: rgba(0,102,255,0.08); border: 1px solid rgba(0,102,255,0.2); padding: 0.25rem 0.6rem; border-radius: 3px; letter-spacing: 0.05em; }
+    .post-title { font-family: var(--font-display); font-size: clamp(2rem, 4.5vw, 3rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 1.25rem; }
+    .post-meta-bar { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; padding: 1rem 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 0; }
+    .post-author { display: flex; align-items: center; gap: 0.65rem; }
+    .author-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--accent)); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: var(--bg); font-family: var(--font-display); flex-shrink: 0; }
+    .author-name { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text); }
+    .post-date-read { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
+
+    /* ARTICLE PROSE */
+    .prose { padding-top: 2.5rem; }
+    .prose p { color: var(--muted); font-size: 1.05rem; line-height: 1.85; margin-bottom: 1.5rem; }
+    .prose p strong { color: var(--text); font-weight: 600; }
+    .prose h2 { font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; color: var(--text); margin-top: 3rem; margin-bottom: 1rem; }
+    .prose h3 { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; color: var(--text); margin-top: 2rem; margin-bottom: 0.75rem; }
+    .prose ul, .prose ol { color: var(--muted); font-size: 1.02rem; line-height: 1.8; margin-bottom: 1.5rem; padding-left: 1.5rem; }
+    .prose li { margin-bottom: 0.4rem; }
+    .prose li strong { color: var(--text); }
+    .prose a { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(0,212,255,0.35); transition: text-decoration-color 0.2s; }
+    .prose a:hover { text-decoration-color: var(--primary); }
+    .prose blockquote { border-left: 3px solid var(--primary); padding: 0.75rem 1.5rem; margin: 2rem 0; background: rgba(0,212,255,0.04); border-radius: 0 6px 6px 0; }
+    .prose blockquote p { color: var(--text); font-style: italic; margin-bottom: 0; }
+    .prose hr { border: none; border-top: 1px solid var(--border); margin: 3rem 0; }
+
+    /* Code blocks */
+    .prose pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      overflow-x: auto;
+      margin: 1.75rem 0;
+      position: relative;
+    }
+    .prose pre::before {
+      content: attr(data-lang);
+      position: absolute; top: 0.75rem; right: 1rem;
+      font-family: var(--font-mono); font-size: 0.65rem;
+      color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .prose code {
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+      color: var(--primary);
+    }
+    .prose pre code {
+      color: #c9d1d9;
+      font-size: 0.85rem;
+      line-height: 1.7;
+    }
+    /* Syntax highlight tokens */
+    .tok-k  { color: #ff7b72; } /* keyword */
+    .tok-s  { color: #a5d6ff; } /* string */
+    .tok-c  { color: #8b949e; font-style: italic; } /* comment */
+    .tok-f  { color: #d2a8ff; } /* function */
+    .tok-n  { color: #79c0ff; } /* name/variable */
+    .tok-v  { color: #ffa657; } /* value/number */
+    .tok-p  { color: #c9d1d9; } /* punctuation */
+
+    /* Callout box */
+    .callout {
+      background: rgba(0,212,255,0.05);
+      border: 1px solid rgba(0,212,255,0.2);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      margin: 2rem 0;
+      display: flex; gap: 1rem; align-items: flex-start;
+    }
+    .callout-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 0.1rem; }
+    .callout-body { font-size: 0.95rem; color: var(--muted); line-height: 1.75; }
+    .callout-body strong { color: var(--primary); }
+    .callout.warning { background: rgba(255,170,0,0.05); border-color: rgba(255,170,0,0.25); }
+    .callout.warning .callout-body strong { color: #ffaa00; }
+
+    /* POST FOOTER */
+    .post-footer { margin-top: 4rem; padding-top: 2.5rem; border-top: 1px solid var(--border); }
+    .post-footer-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+    .post-footer-tag { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); background: var(--surface); border: 1px solid var(--border); padding: 0.3rem 0.75rem; border-radius: 3px; }
+    .post-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 3rem; }
+    .post-nav-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; text-decoration: none; color: inherit; transition: border-color 0.2s; }
+    .post-nav-item:hover { border-color: rgba(0,212,255,0.3); }
+    .post-nav-dir { font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+    .post-nav-title { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; color: var(--text); line-height: 1.3; }
+    .post-nav-item.next { text-align: right; }
+
+    .back-link { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--font-mono); font-size: 0.78rem; color: var(--primary); text-decoration: none; letter-spacing: 0.06em; transition: gap 0.2s; }
+    .back-link:hover { gap: 0.75rem; }
+
+    @media (max-width: 600px) {
+      body { cursor: auto; }
+      #cursor-dot, #cursor-ring { display: none; }
+      .post-nav { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="cursor-dot"></div>
+  <div id="cursor-ring"></div>
+  <div id="progress-bar"></div>
+  <canvas id="bg-canvas"></canvas>
+
+  <nav>
+    <a href="../index.html" class="nav-logo">// jay.french</a>
+    <ul class="nav-links">
+      <li><a href="../index.html#about">About</a></li>
+      <li><a href="../index.html#skills">Skills</a></li>
+      <li><a href="../index.html#experience">Experience</a></li>
+      <li><a href="../index.html#projects">Projects</a></li>
+      <li><a href="../blog.html">Blog</a></li>
+      <li><a href="../index.html#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <div class="post-wrapper">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="../index.html">Home</a>
+      <span>/</span>
+      <a href="../blog.html">Blog</a>
+      <span>/</span>
+      <!-- EDIT: Short version of your post title -->
+      <span style="color:var(--muted)">S3 Audit Trail</span>
+    </div>
+
+    <!-- POST HEADER -->
+    <header class="post-header">
+      <!-- EDIT: Add relevant tags (e.g. Kubernetes, AWS, Terraform, DevOps, FinOps, Security, GCP) -->
+      <div class="post-tags">
+        <span class="post-tag">AWS</span>
+        <span class="post-tag">Security</span>
+      </div>
+      <!-- EDIT: Full post title -->
+      <h1 class="post-title">Building an Event-Driven Audit Trail with S3 and Lambda</h1>
+      <div class="post-meta-bar">
+        <div class="post-author">
+          <div class="author-avatar">JF</div>
+          <span class="author-name">Jay French</span>
+        </div>
+        <!-- EDIT: Date and reading time -->
+        <span class="post-date-read">Sep 28, 2025 &nbsp;·&nbsp; 4 min read</span>
+      </div>
+    </header>
+
+    <!-- ════════════════════════════════════════════════════════════
+         EDIT: WRITE YOUR POST CONTENT BELOW
+         Available elements:
+           <p> — paragraph
+           <h2> — section heading
+           <h3> — sub-heading
+           <ul>/<ol>/<li> — lists
+           <strong> — bold/emphasis
+           <a href=""> — links
+           <blockquote> — pull quotes
+           <hr> — section divider
+           <pre data-lang="yaml"> + <code> — code blocks
+           <div class="callout"> — info callouts
+           <div class="callout warning"> — warning callouts
+    ════════════════════════════════════════════════════════════════ -->
+    <article class="prose">
+
+      <p>
+        This week, I built a simple yet powerful workflow where an S3 upload automatically triggers a Lambda function. The function logs file details and writes an “audit record” back into the same bucket. This pattern is at the core of modern cloud solutions: lightweight, scalable, and serverless.
+      </p>
+
+      <div class="callout">
+        <div class="callout-icon">💡</div>
+        <div class="callout-body">
+          <strong>TL;DR:</strong> I built an event-driven audit system where S3 uploads trigger a Lambda function that logs file metadata and writes a JSON audit record back to the bucket. This serverless pattern is cheap, scalable, and useful for compliance, monitoring, and automation, and it can easily extend to workflows like virus scanning, validation, or notifications.
+        </div>
+      </div>
+
+      <h2>Why This Matters</h2>
+
+      <p>
+        Event-driven systems let you react to changes in real time without constant polling. Instead of writing a script to scan for uploads, we let <strong>S3 events drive the workflow</strong>. This:
+      </p>
+      <ul>
+        <li>Keeps costs near zero</li>
+        <li>Improves responsiveness</li>
+        <li>Simplifies operations</li>
+      </ul>
+
+      <p>
+        And, by writing an audit record back into S3, we’re building a <strong>durable log of every upload</strong>, something compliance, debugging, and monitoring teams love.
+      </p>
+      <h2>Architecture Overview</h2>
+
+      <ul>
+        <li><strong>Amazon S3 Bucket</strong> — Stores uploaded files. Configured to fire <code>ObjectCreated</code> events.</li>
+        <li><strong>AWS Lambda (Python 3.12)</strong> — Triggered by uploads, it records file metadata and writes a JSON audit file under <code>/audit/</code>.</li>
+        <li><strong>IAM Role</strong> — Provides Lambda with least-privilege access to read objects, write audit records, and push logs.</li>
+        <li><strong>CloudWatch Logs</strong> — Captures function execution details.</li>
+      </ul>
+
+      <h2>Workflow</h2>
+      <ul>
+        <li>File uploaded → S3 sends event → Lambda executes.</li>
+        <li>Lambda extracts metadata and writes <code>audit/<original-key>.json</code>.</li>
+      </ul>
+
+      <h2>Building It</h2>
+
+      <p><strong>1. Create the S3 Bucket</strong></p>
+      <!-- EDIT: Replace with your actual code. Use tok-* classes for basic syntax highlighting -->
+      <pre data-lang="AWS CLI"><code>aws s3 mb s3://prj11-upload-<yoursuffix></code></pre>
+
+
+      
+
+      <p>
+        Code examples make technical posts 10x more useful. Use the pre/code block below for any YAML, HCL, shell, or other code snippets. Set <code>data-lang</code> to the language name.
+      </p>
+
+      
+
+
+      <h2>Section Three: Lessons &amp; Takeaways</h2>
+
+      <p>
+        This is a good section to put your honest retrospective. What would you do differently? What surprised you? What would you recommend to someone starting fresh?
+      </p>
+
+      <blockquote>
+        <p>"A pull quote or memorable insight goes here. Something worth calling out from the flow of the post that you really want readers to remember."</p>
+      </blockquote>
+
+      <div class="callout warning">
+        <div class="callout-icon">⚠️</div>
+        <div class="callout-body">
+          <strong>Warning:</strong> Use this callout for gotchas, pitfalls, or things that could go wrong if someone follows your approach without reading carefully. Replace this with your specific warning.
+        </div>
+      </div>
+
+      <h2>Conclusion</h2>
+
+      <p>
+        Wrap up with the key takeaways. Remind the reader what problem you solved, what the key insight was, and what they should do next. End with an invitation to continue the conversation.
+      </p>
+
+      <p>
+        Have questions or found a different approach? Reach me on <a href="#">Twitter/X</a> or <a href="#">LinkedIn</a> — I love hearing how others are solving these problems.
+      </p>
+
+    </article>
+    <!-- ════════════════════════════════════════════════════════════ -->
+
+    <!-- POST FOOTER -->
+    <footer class="post-footer">
+      <!-- EDIT: Add tags relevant to the post content -->
+      <div class="post-footer-tags">
+        <span class="post-footer-tag">#TagOne</span>
+        <span class="post-footer-tag">#TagTwo</span>
+        <span class="post-footer-tag">#TagThree</span>
+      </div>
+
+      <!-- EDIT: Update prev/next post links -->
+      <div class="post-nav">
+        <a href="previous-post.html" class="post-nav-item">
+          <div class="post-nav-dir">← Previous</div>
+          <div class="post-nav-title">Title of the Previous Post</div>
+        </a>
+        <a href="next-post.html" class="post-nav-item next">
+          <div class="post-nav-dir">Next →</div>
+          <div class="post-nav-title">Title of the Next Post</div>
+        </a>
+      </div>
+
+      <a href="../blog.html" class="back-link">← Back to all posts</a>
+    </footer>
+
+  </div><!-- /post-wrapper -->
+
+  <script>
+    // Cursor
+    const dot=document.getElementById('cursor-dot'),ring=document.getElementById('cursor-ring');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+    (function a(){rx+=(mx-rx)*.15;ry+=(my-ry)*.15;dot.style.left=mx+'px';dot.style.top=my+'px';ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(a);})();
+
+    // Reading progress bar
+    const bar=document.getElementById('progress-bar');
+    document.addEventListener('scroll',()=>{
+      const el=document.documentElement;
+      const pct=(el.scrollTop/(el.scrollHeight-el.clientHeight))*100;
+      bar.style.width=pct+'%';
+    });
+
+    // Canvas
+    const canvas=document.getElementById('bg-canvas'),ctx=canvas.getContext('2d');
+    let W,H,ps=[];
+    function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+    resize();window.addEventListener('resize',resize);
+    for(let i=0;i<45;i++)ps.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25,r:Math.random()*1.2+.4});
+    function draw(){ctx.clearRect(0,0,W,H);for(let i=0;i<ps.length;i++)for(let j=i+1;j<ps.length;j++){const dx=ps[i].x-ps[j].x,dy=ps[i].y-ps[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<140){ctx.beginPath();ctx.moveTo(ps[i].x,ps[i].y);ctx.lineTo(ps[j].x,ps[j].y);ctx.strokeStyle=`rgba(0,180,255,${(1-d/140)*.15})`;ctx.lineWidth=.6;ctx.stroke();}}for(const p of ps){ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle='rgba(0,212,255,0.4)';ctx.fill();p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;}requestAnimationFrame(draw);}
+    draw();
+  </script>
+</body>
+</html>
