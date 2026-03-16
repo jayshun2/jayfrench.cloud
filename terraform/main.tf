@@ -103,7 +103,7 @@ resource "aws_cloudfront_origin_access_control" "site_oac" {
 resource "aws_cloudfront_distribution" "site_cdn" {
   origin {
     domain_name = aws_s3_bucket.dev_bucket.bucket_regional_domain_name # this needs to match the bucket resource above "aws_s3_bucket.dev_bucket"
-    origin_id   = "jayfrench-origin"
+    origin_id   = "jayfrenchorigin"
 
     origin_access_control_id = aws_cloudfront_origin_access_control.site_oac.id
   }
@@ -117,7 +117,7 @@ resource "aws_cloudfront_distribution" "site_cdn" {
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "crc-s3-origin"
+    target_origin_id = "jayfrenchorigin"
 
     viewer_protocol_policy = "redirect-to-https"
 
