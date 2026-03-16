@@ -23,5 +23,5 @@ jobs:
       - name: Sync site folder to S3
         run: aws s3 sync ./site s3://jayfrench.cloud --delete
         
-     # - name: Invalidate CloudFront Cache
-     #   run: aws cloudfront create-invalidation --distribution-id E3QUBKVBGKJW37 --paths "/*"
+      - name: Invalidate CloudFront Cache
+        run: aws cloudfront create-invalidation --distribution-id ERJQXAQGT4SWI --paths "/*"
