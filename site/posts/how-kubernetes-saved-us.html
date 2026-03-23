@@ -192,25 +192,25 @@
       <a href="../blog.html">Blog</a>
       <span>/</span>
       <!-- EDIT: Short version of your post title -->
-      <span style="color:var(--muted)">Your Post Title</span>
+      <span style="color:var(--muted)">ubernetes Drift Detection Saved Us</span>
     </div>
 
     <!-- POST HEADER -->
     <header class="post-header">
       <!-- EDIT: Add relevant tags (e.g. Kubernetes, AWS, Terraform, DevOps, FinOps, Security, GCP) -->
       <div class="post-tags">
-        <span class="post-tag">AWS</span>
-        <span class="post-tag">Terraform</span>
+        <span class="post-tag">Kubernetes</span>
+        <span class="post-tag">IaC</span>
       </div>
       <!-- EDIT: Full post title -->
-      <h1 class="post-title">Terraform at Scale: Module Strategy for Platform Teams</h1>
+      <h1 class="post-title">How Kubernetes Drift Detection Saved Us From Infrastructure Chaos</h1>
       <div class="post-meta-bar">
         <div class="post-author">
           <div class="author-avatar">JF</div>
           <span class="author-name">Jay French</span>
         </div>
         <!-- EDIT: Date and reading time -->
-        <span class="post-date-read">Mar 17, 2026 &nbsp;·&nbsp; 5 min read</span>
+        <span class="post-date-read">March 23, 2026 &nbsp;·&nbsp; 5 min read</span>
       </div>
     </header>
 
@@ -228,21 +228,214 @@
            <pre data-lang="yaml"> + <code> — code blocks
            <div class="callout"> — info callouts
            <div class="callout warning"> — warning callouts
-
-            /* Syntax highlight tokens */
-    .tok-k  { color: #ff7b72; } /* keyword */
-    .tok-s  { color: #a5d6ff; } /* string */
-    .tok-c  { color: #8b949e; font-style: italic; } /* comment */
-    .tok-f  { color: #d2a8ff; } /* function */
-    .tok-n  { color: #79c0ff; } /* name/variable */
-    .tok-v  { color: #ffa657; } /* value/number */
-    .tok-p  { color: #c9d1d9; } /* punctuation */
     ════════════════════════════════════════════════════════════════ -->
     <article class="prose">
 
-      <p>When Terraform projects are small, almost anything works.</p> <p>A couple of files, a few variables, maybe a module or two, and you’re moving fast.</p> <p>But once you scale into real environments, multiple teams, multiple accounts, CI/CD pipelines, compliance requirements, that approach collapses quickly.</p> <p><strong>Terraform at scale is not a syntax problem. It is an architecture problem.</strong></p> <hr> <h2>The Problem: Why Terraform Breaks at Scale</h2> <p>Early Terraform projects are typically:</p> <ul> <li>Flat</li> <li>Flexible</li> <li>Fast to iterate</li> </ul> <p>At scale, those same traits become liabilities.</p> <p>You start seeing:</p> <ul> <li>Copy-pasted infrastructure across repositories</li> <li>Inconsistent naming, tagging, and security controls</li> <li>Drift between environments</li> <li>Teams reinventing the same patterns differently</li> <li>Uncontrolled and risky deployment workflows</li> </ul> <blockquote>Without structure, you don’t get consistency. Without consistency, you don’t get reliability.</blockquote> <hr> <h2>The Shift: From Infrastructure Code to Platform Product</h2> <p>At scale, Terraform stops being “infrastructure as code” and becomes a <strong>platform product</strong>.</p> <p>This platform is owned by a dedicated team responsible for:</p> <ul> <li>Defining golden paths</li> <li>Reducing cognitive load for developers</li> <li>Enforcing security and compliance</li> <li>Enabling safe self-service infrastructure</li> </ul> <div class="callout"> <p><strong>Key idea:</strong> You are no longer writing Terraform for yourself. You are building a system others depend on.</p> </div> <hr> <h2>The Three-Layer Module Model</h2> <h3>1. Resource Modules (Primitives)</h3> <p>These are thin wrappers around individual resources.</p> <ul> <li>aws_vpc</li> <li>aws_s3_bucket</li> <li>aws_iam_role</li> </ul> <p>They should:</p> <ul> <li>Be highly reusable</li> <li>Stay provider-focused</li> <li>Avoid business logic</li> <li>Expose most configuration options</li> </ul> <h3>2. Platform Modules (Opinionated Patterns)</h3> <p>This is where the real value lives.</p> <p>Platform modules combine resources into production-ready patterns.</p> <ul> <li>secure_s3_bucket</li> <li>vpc_with_private_subnets</li> <li>application_load_balancer</li> <li>ecs_service_with_autoscaling</li> </ul> <p>They should:</p> <ul> <li>Encode best practices</li> <li>Enforce tagging and naming standards</li> <li>Apply security defaults</li> <li>Hide unnecessary complexity</li> </ul> <h3>3. Environment Stacks (Deployment Layer)</h3> <p>This layer defines what gets deployed and where.</p> <ul> <li>dev</li> <li>test</li> <li>prod</li> <li>shared-services</li> </ul> <p>They should:</p> <ul> <li>Reference platform modules</li> <li>Contain minimal logic</li> <li>Be environment-specific only</li> </ul> <hr> <h2>Don’t Let Developers Touch Raw Resources</h2> <p>This is where many teams lose control.</p> <p>If engineers are directly using provider resources, consistency is already broken.</p> <p>Instead:</p> <ul> <li>Platform team builds modules</li> <li>Developers consume modules</li> <li>Raw resources are abstracted away</li> </ul> <div class="callout warning"> <p>Allowing direct resource usage at scale leads to drift, security gaps, and inconsistent architecture.</p> </div> <hr> <h2>Designing Platform Modules Correctly</h2> <h3>Opinionated, Not Flexible</h3> <p>A common mistake is trying to make modules do everything.</p> <p>Instead:</p> <ul> <li>Make strong decisions</li> <li>Limit inputs to what matters</li> <li>Avoid exposing every possible parameter</li> </ul> <h3>Secure by Default</h3> <p>Every module should assume:</p> <ul> <li>Encryption enabled</li> <li>Logging enabled</li> <li>Least privilege access</li> <li>No public exposure unless required</li> </ul> <h3>Consistent Interfaces</h3> <p>All modules should follow the same structure:</p> <ul> <li>Naming conventions</li> <li>Tagging strategy</li> <li>Input/output patterns</li> </ul> <hr> <h2>State Strategy: Isolation Is Everything</h2> <p>State management becomes critical at scale.</p> <p>Best practice:</p> <ul> <li>One state file per environment per workload</li> </ul> <p>Avoid:</p> <ul> <li>Monolithic state files</li> <li>Shared state across systems</li> </ul> <pre data-lang="yaml"><code> <span class="tok-n">terraform</span> <span class="tok-p">{</span> <span class="tok-n">backend</span> <span class="tok-s">"s3"</span> <span class="tok-p">{</span> <span class="tok-n">bucket</span> <span class="tok-p">=</span> <span class="tok-s">"tf-state-prod"</span> <span class="tok-n">key</span> <span class="tok-p">=</span> <span class="tok-s">"networking/vpc.tfstate"</span> <span class="tok-n">region</span> <span class="tok-p">=</span> <span class="tok-s">"us-east-1"</span> <span class="tok-n">dynamodb_table</span> <span class="tok-p">=</span> <span class="tok-s">"tf-locks"</span> <span class="tok-p">}</span> <span class="tok-p">}</span> </code></pre> <hr> <h2>Versioning and Module Distribution</h2> <p>Modules should be treated like software.</p> <p>Never reference modules locally:</p> <pre data-lang="yaml"><code> <span class="tok-c"># Bad</span> <span class="tok-n">source</span> <span class="tok-p">=</span> <span class="tok-s">"../modules/vpc"</span> </code></pre> <p>Use versioned sources instead:</p> <pre data-lang="yaml"><code> <span class="tok-c"># Good</span> <span class="tok-n">source</span> <span class="tok-p">=</span> <span class="tok-s">"git::https://github.com/org/platform-modules.git//vpc?ref=v1.2.0"</span> </code></pre> <p>This ensures:</p> <ul> <li>Reproducibility</li> <li>Safe upgrades</li> <li>Controlled changes</li> </ul> <hr> <h2>CI/CD: Enforcing the System</h2> <p>Without CI/CD, your module strategy will fail.</p> <p>Minimum pipeline:</p> <ul> <li>terraform fmt check</li> <li>terraform validate</li> <li>terraform plan on pull request</li> <li>terraform apply on merge</li> </ul> <p>Advanced capabilities:</p> <ul> <li>Policy as code</li> <li>Security scanning</li> <li>Cost estimation</li> </ul> <blockquote>No one should be applying Terraform manually in production environments.</blockquote> <hr> <h2>Multi-Account Strategy</h2> <p>At scale, everything should be multi-account.</p> <ul> <li>management</li> <li>security</li> <li>shared-services</li> <li>dev</li> <li>prod</li> </ul> <p>Terraform should:</p> <ul> <li>Assume roles into target accounts</li> <li>Use isolated state per account</li> <li>Deploy through pipelines</li> </ul> <hr> <h2>Common Anti-Patterns</h2> <ul> <li>One repo per app using raw Terraform resources</li> <li>Overly complex modules with excessive variables</li> <li>Shared state across unrelated systems</li> <li>No module versioning</li> </ul> <div class="callout warning"> <p>Most Terraform failures at scale are caused by poor structure, not lack of knowledge.</p> </div> <hr> <h2>What Good Looks Like</h2> <p>A mature Terraform platform includes:</p> <ul> <li>Central module repository</li> <li>Clear module layering</li> <li>Versioned and documented modules</li> <li>CI/CD enforced workflows</li> <li>Multi-account architecture</li> <li>Simple developer experience</li> </ul> <hr> <h2>Final Thought</h2> <p>Most teams don’t fail at Terraform because they don’t understand it.</p> <p>They fail because they treat it like a scripting tool instead of a platform.</p> <blockquote>Terraform is not just about provisioning infrastructure. It is about standardizing how your organization builds systems.</blockquote> <hr> <p>If you’re working through problems like this, I’m documenting more here:</p> <p><a href="https://jayfrench.cloud">https://jayfrench.cloud</a></p>
-
-    
+       <p>
+      Three months into a production migration, we discovered that 14 of our 47 deployments had
+      quietly drifted from their declared state. Not in a dramatic, pager-firing way. In the slow,
+      invisible way that turns a Tuesday afternoon into a Friday incident.
+    </p>
+ 
+    <blockquote>
+      <p>That's the thing about configuration drift. It doesn't announce itself. It accumulates.</p>
+    </blockquote>
+ 
+    <p>
+      Here's what happened, what we built to fix it, and why I think most teams are one bad deploy
+      away from the same problem.
+    </p>
+ 
+    <div class="section-divider"><span>◆</span></div>
+ 
+    <!-- ── The Setup ─────────────────────────────────────────── -->
+    <h2><span class="h2-num">Setup</span> The Problem</h2>
+ 
+    <p>
+      We were running a mid-sized Kubernetes cluster across three environments: dev, staging, and
+      production. Standard GitOps workflow. ArgoCD handling deployments. Helm charts checked into
+      Git. Everything was "declarative." Everything was "source-of-truth."
+    </p>
+ 
+    <p>Except it wasn't.</p>
+ 
+    <p>
+      Engineers were patching things manually under pressure. <code>kubectl edit</code> became a
+      habit. Resource limits got tweaked directly on pods. ConfigMaps were updated in-cluster
+      without touching the repo. Nobody flagged it because nothing broke. The cluster kept humming.
+      The dashboards stayed green.
+    </p>
+ 
+    <p>Then we started seeing weird behavior:</p>
+ 
+    <ul>
+      <li>A service running at <strong>2Gi memory</strong> when its limit was declared at 512Mi</li>
+      <li>A deployment with <strong>two replicas</strong> when the Helm chart declared three</li>
+      <li>A sidecar container version <strong>six weeks behind</strong> what we'd intended to ship</li>
+    </ul>
+ 
+    <p>
+      None of it was catastrophic. All of it was real. And we had no idea how long it had been
+      that way.
+    </p>
+ 
+    <div class="section-divider"><span>◆</span></div>
+ 
+    <!-- ── Point 1 ──────────────────────────────────────────── -->
+    <h2><span class="h2-num">01</span> GitOps Sync Status Isn't the Same as Drift Detection</h2>
+ 
+    <p>
+      This is the part that trips people up. ArgoCD told us our apps were "Synced." And technically,
+      they were, at the moment of last sync. But sync status is a snapshot, not a continuous
+      assertion. If someone runs <code>kubectl edit</code> after a sync, ArgoCD doesn't know.
+      It's not watching for that.
+    </p>
+ 
+    <div class="callout">
+      <p>
+        <strong>Drift detection</strong> means continuously comparing what's running in the cluster
+        against what's declared in Git, and alerting when they diverge. That's a different problem
+        than deployment sync. Most teams conflate them and pay for it later.
+      </p>
+    </div>
+ 
+    <p>
+      We built a reconciliation loop using ArgoCD's resource tracking combined with a custom
+      controller that scraped live cluster state on a 5-minute interval, diffed it against our
+      Helm-rendered manifests, and pushed the deltas into a monitoring pipeline.
+    </p>
+ 
+    <pre data-lang="go"><code><span class="tok-c">// simplified drift detection loop</span>
+<span class="tok-k">func</span> <span class="tok-f">reconcileLoop</span><span class="tok-p">(</span><span class="tok-n">ctx</span> <span class="tok-n">context</span><span class="tok-p">.</span><span class="tok-n">Context</span><span class="tok-p">) {</span>
+    <span class="tok-n">ticker</span> <span class="tok-p">:=</span> <span class="tok-n">time</span><span class="tok-p">.</span><span class="tok-f">NewTicker</span><span class="tok-p">(</span><span class="tok-v">5</span> <span class="tok-p">*</span> <span class="tok-n">time</span><span class="tok-p">.</span><span class="tok-n">Minute</span><span class="tok-p">)</span>
+    <span class="tok-k">for</span> <span class="tok-k">range</span> <span class="tok-n">ticker</span><span class="tok-p">.</span><span class="tok-n">C</span> <span class="tok-p">{</span>
+        <span class="tok-n">liveState</span>  <span class="tok-p">:=</span> <span class="tok-f">scrapeClusterState</span><span class="tok-p">(</span><span class="tok-n">ctx</span><span class="tok-p">)</span>
+        <span class="tok-n">declState</span>  <span class="tok-p">:=</span> <span class="tok-f">renderHelmManifests</span><span class="tok-p">()</span>
+        <span class="tok-n">deltas</span>     <span class="tok-p">:=</span> <span class="tok-f">diff</span><span class="tok-p">(</span><span class="tok-n">liveState</span><span class="tok-p">,</span> <span class="tok-n">declState</span><span class="tok-p">)</span>
+        <span class="tok-f">pushMetrics</span><span class="tok-p">(</span><span class="tok-n">deltas</span><span class="tok-p">)</span>  <span class="tok-c">// → Prometheus exporter</span>
+    <span class="tok-p">}</span>
+<span class="tok-p">}</span></code></pre>
+ 
+    <p>
+      Nothing fancy. About 400 lines of Go and a Prometheus exporter. The first run returned
+      <strong>14 drifted resources</strong>. Four of them in production.
+    </p>
+ 
+    <div class="section-divider"><span>◆</span></div>
+ 
+    <!-- ── Point 2 ──────────────────────────────────────────── -->
+    <h2><span class="h2-num">02</span> The Real Problem Is Toil and Pressure, Not Malicious Intent</h2>
+ 
+    <p>Every one of those manual edits had a story:</p>
+ 
+    <ul>
+      <li>A memory limit bumped because an OOMKill was happening at 2 AM</li>
+      <li>A replica count changed because load spiked and autoscaling hadn't kicked in fast enough</li>
+      <li>A ConfigMap updated because a third-party API changed its endpoint and we needed 30 seconds
+          to fix it, not 30 minutes to run a pipeline</li>
+    </ul>
+ 
+    <p>These aren't reckless engineers. These are engineers solving real problems with the tools
+    in front of them.</p>
+ 
+    <div class="callout warning">
+      <p>
+        Without drift detection, that 2 AM fix becomes permanent. Nobody goes back. The PR never
+        gets opened. The Helm chart never gets updated. And six weeks later, someone deploys from
+        Git and rolls back the fix that's been holding production together.
+      </p>
+    </div>
+ 
+    <p>
+      The fix isn't telling people to stop using <code>kubectl edit</code>. It's making the correct
+      path faster than the escape hatch, and making drift <strong>visible</strong> so it can't
+      quietly accumulate.
+    </p>
+ 
+    <div class="section-divider"><span>◆</span></div>
+ 
+    <!-- ── Point 3 ──────────────────────────────────────────── -->
+    <h2><span class="h2-num">03</span> Alerting on Drift Changes the Culture</h2>
+ 
+    <p>
+      Once engineers could see a drift dashboard, broken down by namespace, by team, by resource
+      type, behavior shifted. Not because we mandated it. Because visibility creates accountability
+      in a way that process documents never do.
+    </p>
+ 
+    <p>We tagged each drift event with three pieces of metadata:</p>
+ 
+    <pre data-lang="yaml"><code><span class="tok-n">drift_event</span><span class="tok-p">:</span>
+  <span class="tok-n">resource</span><span class="tok-p">:</span>        <span class="tok-s">deployment/api-gateway</span>
+  <span class="tok-n">namespace</span><span class="tok-p">:</span>       <span class="tok-s">production</span>
+  <span class="tok-n">last_modifier</span><span class="tok-p">:</span>  <span class="tok-s">engineer@company.com</span>   <span class="tok-c"># from audit logs</span>
+  <span class="tok-n">time_since</span><span class="tok-p">:</span>     <span class="tok-s">6d 14h</span>
+  <span class="tok-n">severity</span><span class="tok-p">:</span>       <span class="tok-s">high</span>                   <span class="tok-c"># resource limit 4x declared</span>
+  <span class="tok-n">delta</span><span class="tok-p">:</span>
+    <span class="tok-n">memory_limit</span><span class="tok-p">:</span> <span class="tok-p">{</span> <span class="tok-n">declared</span><span class="tok-p">:</span> <span class="tok-s">512Mi</span><span class="tok-p">,</span> <span class="tok-n">live</span><span class="tok-p">:</span> <span class="tok-s">2Gi</span> <span class="tok-p">}</span></code></pre>
+ 
+    <p>Severity was tiered deliberately:</p>
+ 
+    <ul>
+      <li><strong>Low</strong> — replica count variance, annotation changes</li>
+      <li><strong>Medium</strong> — resource limit changes within 2x declared</li>
+      <li><strong>High</strong> — security context changes, limits beyond 2x, missing probes</li>
+      <li><strong>PagerDuty alert</strong> — anything in production flagged high severity</li>
+    </ul>
+ 
+    <p>
+      Within three weeks of launching the dashboard, the team had self-corrected 11 of the 14
+      original drifted resources without us asking. They just didn't want to see red in their
+      namespace.
+    </p>
+ 
+    <div class="section-divider"><span>◆</span></div>
+ 
+    <!-- ── Point 4 ──────────────────────────────────────────── -->
+    <h2><span class="h2-num">04</span> Drift Detection Has to Be Cheap to Maintain</h2>
+ 
+    <p>
+      Here's where most homegrown solutions fall apart. You build the thing, it works, then it
+      becomes another system someone has to babysit. We kept ours deliberately simple.
+    </p>
+ 
+    <ul>
+      <li>No custom UI. A Grafana dashboard pulling from Prometheus.</li>
+      <li>The controller runs as a standard Kubernetes deployment with a
+          <code>ServiceAccount</code> scoped to read-only cluster access.</li>
+      <li>The diff logic uses server-side apply dry-runs, which Kubernetes gives you for free.</li>
+      <li>Total compute overhead is negligible.</li>
+    </ul>
+ 
+    <div class="callout">
+      <p>
+        We've been running it for eight months. It's needed exactly two bug fixes and one config
+        update when we migrated Helm chart versions. Complexity is debt. Every additional feature
+        you bolt on is another thing that can fail or get abandoned.
+      </p>
+    </div>
+ 
+    <div class="section-divider"><span>◆</span></div>
+ 
+    <!-- ── Takeaway ──────────────────────────────────────────── -->
+    <h2><span class="h2-num">↗</span> The Takeaway</h2>
+ 
+    <p>
+      Drift detection isn't a Kubernetes problem. It's a systems problem. The cluster just happens
+      to be where the drift lives.
+    </p>
+ 
+    <p>
+      If you're running GitOps and you've never run a diff between your declared manifests and your
+      live cluster state, you probably have drift. You just don't know what it looks like yet.
+    </p>
+ 
+    <blockquote>
+      <p>
+        What decisions are you currently making based on cluster state that you think matches Git,
+        but doesn't?
+      </p>
+    </blockquote>
 
     </article>
     <!-- ════════════════════════════════════════════════════════════ -->
@@ -251,19 +444,20 @@
     <footer class="post-footer">
       <!-- EDIT: Add tags relevant to the post content -->
       <div class="post-footer-tags">
-        <span class="post-footer-tag">AWS</span>
-        <span class="post-footer-tag">Terraform</span>
+        <span class="post-footer-tag">#TagOne</span>
+        <span class="post-footer-tag">#TagTwo</span>
+        <span class="post-footer-tag">#TagThree</span>
       </div>
 
       <!-- EDIT: Update prev/next post links -->
       <div class="post-nav">
-        <a href="building-an-event-driven-audit-trail.html" class="post-nav-item">
+        <a href="terraform-at-scale.html" class="post-nav-item">
           <div class="post-nav-dir">← Previous</div>
-          <div class="post-nav-title">Building an Event Driven Audit Trail..</div>
+          <div class="post-nav-title">Terraform At Scale</div>
         </a>
-        <a href="how-kubernetes-saved-us.html" class="post-nav-item next">
+        <a href="../index.html" class="post-nav-item next">
           <div class="post-nav-dir">Next →</div>
-          <div class="post-nav-title">How Kubernetes Saved Us</div>
+          <div class="post-nav-title">Next post coming soon!</div>
         </a>
       </div>
 
