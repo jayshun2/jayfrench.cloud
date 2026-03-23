@@ -14,7 +14,7 @@
   ║  5. Optionally add a card to index.html blog preview        ╚══════════════════════════════════════════════════════════════╝
   -->
   <!-- EDIT: Page title -->
-  <title>Your Post Title — Alex Morgan</title>
+  <title>Your Post Title — Jay French</title>
   <!-- EDIT: SEO description -->
   <meta name="description" content="A short description of this post for search engines and social sharing." />
   <!-- EDIT: Open Graph tags for social sharing -->
@@ -172,7 +172,7 @@
   <canvas id="bg-canvas"></canvas>
 
   <nav>
-    <a href="../index.html" class="nav-logo">// alex.morgan</a>
+    <a href="../index.html" class="nav-logo">// jay.french</a>
     <ul class="nav-links">
       <li><a href="../index.html#about">About</a></li>
       <li><a href="../index.html#skills">Skills</a></li>
@@ -205,10 +205,8 @@
       <!-- EDIT: Full post title -->
       <h1 class="post-title">Your Full Post Title Goes Here: Make It Descriptive</h1>
       <div class="post-meta-bar">
-        <div class="post-author">
-          <div class="author-avatar">AM</div>
-          <span class="author-name">Alex Morgan</span>
-        </div>
+        <div class="author-avatar">JF</div>
+        <span class="author-name">Jay French</span>
         <!-- EDIT: Date and reading time -->
         <span class="post-date-read">Month DD, YYYY &nbsp;·&nbsp; X min read</span>
       </div>
@@ -228,81 +226,19 @@
            <pre data-lang="yaml"> + <code> — code blocks
            <div class="callout"> — info callouts
            <div class="callout warning"> — warning callouts
+
+            /* Syntax highlight tokens */
+          .tok-k  { color: #ff7b72; } /* keyword */
+          .tok-s  { color: #a5d6ff; } /* string */
+          .tok-c  { color: #8b949e; font-style: italic; } /* comment */
+          .tok-f  { color: #d2a8ff; } /* function */
+          .tok-n  { color: #79c0ff; } /* name/variable */
+          .tok-v  { color: #ffa657; } /* value/number */
+          .tok-p  { color: #c9d1d9; } /* punctuation */
     ════════════════════════════════════════════════════════════════ -->
     <article class="prose">
 
-      <p>
-        Write your opening paragraph here. Hook the reader with the core problem, an interesting observation, or a result that will make them want to keep reading. Keep it punchy — 2–3 sentences maximum before you dive into the substance.
-      </p>
-
-      <div class="callout">
-        <div class="callout-icon">💡</div>
-        <div class="callout-body">
-          <strong>TL;DR:</strong> Use a callout like this for a quick summary. Great for readers who skim first, read second. Replace this with your key takeaway.
-        </div>
-      </div>
-
-      <h2>Section One Heading</h2>
-
-      <p>
-        Start your first major section here. Provide context, explain the problem space, and set up why what you're about to say matters. Write like you're explaining to a smart colleague who hasn't lived through the same problems you have.
-      </p>
-
-      <p>
-        Continue with more detail. <strong>Bold key terms or numbers</strong> that you want readers to retain. Link to relevant external resources using <a href="#">anchor text like this</a>.
-      </p>
-
-      <ul>
-        <li><strong>First point</strong> — explain it briefly here.</li>
-        <li><strong>Second point</strong> — keep each item focused on one idea.</li>
-        <li><strong>Third point</strong> — use bullets for lists of 3 or more discrete items.</li>
-      </ul>
-
-      <h2>Section Two: Show Some Code</h2>
-
-      <p>
-        Code examples make technical posts 10x more useful. Use the pre/code block below for any YAML, HCL, shell, or other code snippets. Set <code>data-lang</code> to the language name.
-      </p>
-
-      <!-- EDIT: Replace with your actual code. Use tok-* classes for basic syntax highlighting -->
-      <pre data-lang="terraform"><code><span class="tok-k">resource</span> <span class="tok-s">"aws_eks_cluster"</span> <span class="tok-s">"main"</span> <span class="tok-p">{</span>
-  <span class="tok-n">name</span>     <span class="tok-p">=</span> <span class="tok-n">var</span><span class="tok-p">.</span><span class="tok-n">cluster_name</span>
-  <span class="tok-n">role_arn</span> <span class="tok-p">=</span> <span class="tok-n">aws_iam_role</span><span class="tok-p">.</span><span class="tok-n">eks_cluster</span><span class="tok-p">.</span><span class="tok-n">arn</span>
-  <span class="tok-n">version</span>  <span class="tok-p">=</span> <span class="tok-s">"1.29"</span>
-
-  <span class="tok-n">vpc_config</span> <span class="tok-p">{</span>
-    <span class="tok-n">subnet_ids</span>              <span class="tok-p">=</span> <span class="tok-n">var</span><span class="tok-p">.</span><span class="tok-n">private_subnet_ids</span>
-    <span class="tok-n">endpoint_private_access</span> <span class="tok-p">=</span> <span class="tok-v">true</span>
-    <span class="tok-n">endpoint_public_access</span>  <span class="tok-p">=</span> <span class="tok-v">false</span>
-  <span class="tok-p">}</span>
-<span class="tok-p">}</span></code></pre>
-
-      <h2>Section Three: Lessons &amp; Takeaways</h2>
-
-      <p>
-        This is a good section to put your honest retrospective. What would you do differently? What surprised you? What would you recommend to someone starting fresh?
-      </p>
-
-      <blockquote>
-        <p>"A pull quote or memorable insight goes here. Something worth calling out from the flow of the post that you really want readers to remember."</p>
-      </blockquote>
-
-      <div class="callout warning">
-        <div class="callout-icon">⚠️</div>
-        <div class="callout-body">
-          <strong>Warning:</strong> Use this callout for gotchas, pitfalls, or things that could go wrong if someone follows your approach without reading carefully. Replace this with your specific warning.
-        </div>
-      </div>
-
-      <h2>Conclusion</h2>
-
-      <p>
-        Wrap up with the key takeaways. Remind the reader what problem you solved, what the key insight was, and what they should do next. End with an invitation to continue the conversation.
-      </p>
-
-      <p>
-        Have questions or found a different approach? Reach me on <a href="#">Twitter/X</a> or <a href="#">LinkedIn</a> — I love hearing how others are solving these problems.
-      </p>
+      <!-- add the post here! -->
 
     </article>
     <!-- ════════════════════════════════════════════════════════════ -->
@@ -322,9 +258,9 @@
           <div class="post-nav-dir">← Previous</div>
           <div class="post-nav-title">Title of the Previous Post</div>
         </a>
-        <a href="next-post.html" class="post-nav-item next">
+        <a href="../index.html" class="post-nav-item next"> <!-- Update after next post -->
           <div class="post-nav-dir">Next →</div>
-          <div class="post-nav-title">Title of the Next Post</div>
+          <div class="post-nav-title">Next post coming soon!</div>
         </a>
       </div>
 
