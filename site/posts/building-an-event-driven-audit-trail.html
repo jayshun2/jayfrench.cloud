@@ -232,87 +232,293 @@
     <article class="prose">
 
       <p>
-        This week, I built a simple yet powerful workflow where an S3 upload automatically triggers a Lambda function. The function logs file details and writes an “audit record” back into the same bucket. This pattern is at the core of modern cloud solutions: lightweight, scalable, and serverless.
+      Have you ever wondered who did what inside your AWS account? Maybe a bucket was deleted,
+      a role was modified, or an instance was spun up out of nowhere. AWS gives you a built-in
+      security camera for this exact purpose, and it's called CloudTrail.
+    </p>
+ 
+    <p>
+      In this post, we'll walk through setting up CloudTrail step by step so you can record,
+      store, and review every API action that happens in your account.
+    </p>
+ 
+    <div class="section-divider"><span>◆</span></div>
+ 
+    <!-- ── What is CloudTrail ─────────────────────────────────── -->
+    <h2><span class="h2-num">Intro</span> What Is CloudTrail, and Why Should You Care?</h2>
+ 
+    <blockquote>
+      <p>
+        Think of your AWS account as a house. Every door or window is an API, and every time
+        someone opens one, CloudTrail makes a note of it.
       </p>
-
-      <div class="callout">
-        <div class="callout-icon">💡</div>
-        <div class="callout-body">
-          <strong>TL;DR:</strong> I built an event-driven audit system where S3 uploads trigger a Lambda function that logs file metadata and writes a JSON audit record back to the bucket. This serverless pattern is cheap, scalable, and useful for compliance, monitoring, and automation, and it can easily extend to workflows like virus scanning, validation, or notifications.
-        </div>
+    </blockquote>
+ 
+    <p>
+      This means you always know who did something, what they did, when they did it, and where
+      they did it from.
+    </p>
+ 
+    <p>
+      By default, CloudTrail keeps a short history of events. But to really benefit, you'll want
+      to create a trail that stores logs in Amazon S3, streams them to CloudWatch Logs, and gives
+      you the ability to search or alert on unusual behavior.
+    </p>
+ 
+    <div class="section-divider"><span>◆</span></div>
+ 
+    <!-- ── Services ───────────────────────────────────────────── -->
+    <h2><span class="h2-num">Stack</span> The Services You'll Use</h2>
+ 
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="svc-name">CloudTrail</div>
+        <div class="svc-desc">The camera system recording every API call across your account.</div>
       </div>
-
-      <h2>Why This Matters</h2>
-
-      <p>
-        Event-driven systems let you react to changes in real time without constant polling. Instead of writing a script to scan for uploads, we let <strong>S3 events drive the workflow</strong>. This:
-      </p>
-      <ul>
-        <li>Keeps costs near zero</li>
-        <li>Improves responsiveness</li>
-        <li>Simplifies operations</li>
-      </ul>
-
-      <p>
-        And, by writing an audit record back into S3, we’re building a <strong>durable log of every upload</strong>, something compliance, debugging, and monitoring teams love.
-      </p>
-      <h2>Architecture Overview</h2>
-
-      <ul>
-        <li><strong>Amazon S3 Bucket</strong> — Stores uploaded files. Configured to fire <code>ObjectCreated</code> events.</li>
-        <li><strong>AWS Lambda (Python 3.12)</strong> — Triggered by uploads, it records file metadata and writes a JSON audit file under <code>/audit/</code>.</li>
-        <li><strong>IAM Role</strong> — Provides Lambda with least-privilege access to read objects, write audit records, and push logs.</li>
-        <li><strong>CloudWatch Logs</strong> — Captures function execution details.</li>
-      </ul>
-
-      <h2>Workflow</h2>
-      <ul>
-        <li>File uploaded → S3 sends event → Lambda executes.</li>
-        <li>Lambda extracts metadata and writes <code>audit/<original-key>.json</code>.</li>
-      </ul>
-
-      <h2>Building It</h2>
-
-      <p><strong>1. Create the S3 Bucket</strong></p>
-      <!-- EDIT: Replace with your actual code. Use tok-* classes for basic syntax highlighting -->
-      <pre data-lang="AWS CLI"><code>aws s3 mb s3://prj11-upload-<yoursuffix></code></pre>
-
-
-      
-
-      <p>
-        Code examples make technical posts 10x more useful. Use the pre/code block below for any YAML, HCL, shell, or other code snippets. Set <code>data-lang</code> to the language name.
-      </p>
-
-      
-
-
-      <h2>Section Three: Lessons &amp; Takeaways</h2>
-
-      <p>
-        This is a good section to put your honest retrospective. What would you do differently? What surprised you? What would you recommend to someone starting fresh?
-      </p>
-
-      <blockquote>
-        <p>"A pull quote or memorable insight goes here. Something worth calling out from the flow of the post that you really want readers to remember."</p>
-      </blockquote>
-
-      <div class="callout warning">
-        <div class="callout-icon">⚠️</div>
-        <div class="callout-body">
-          <strong>Warning:</strong> Use this callout for gotchas, pitfalls, or things that could go wrong if someone follows your approach without reading carefully. Replace this with your specific warning.
-        </div>
+      <div class="service-card">
+        <div class="svc-name">S3</div>
+        <div class="svc-desc">The file cabinet where your log files live long-term.</div>
       </div>
-
-      <h2>Conclusion</h2>
-
+      <div class="service-card">
+        <div class="svc-name">CloudWatch Logs</div>
+        <div class="svc-desc">A motion sensor that alerts you if something unusual happens.</div>
+        <div class="svc-optional">Optional</div>
+      </div>
+      <div class="service-card">
+        <div class="svc-name">Athena / CT Lake</div>
+        <div class="svc-desc">The detective who digs through logs when you need answers.</div>
+        <div class="svc-optional">Optional</div>
+      </div>
+      <div class="service-card">
+        <div class="svc-name">KMS</div>
+        <div class="svc-desc">The lockbox that encrypts your logs for extra security.</div>
+        <div class="svc-optional">Optional</div>
+      </div>
+    </div>
+ 
+    <div class="section-divider"><span>◆</span></div>
+ 
+    <!-- ── Step 1 ──────────────────────────────────────────────── -->
+    <div class="step-header">
+      <span class="step-num">Step 01</span>
+      <span class="step-title">Create a Trail</span>
+    </div>
+ 
+    <p>Log into the AWS Management Console, open CloudTrail, and navigate to <strong>Trails → Create trail</strong>.</p>
+ 
+    <ol>
+      <li>Name it something easy to remember, like <code>acct-main-trail</code>.</li>
+      <li>Apply it to <strong>all regions</strong> so you don't miss activity outside your home region.</li>
+      <li>Under log events, turn on <strong>Management events</strong> and select both read and write.</li>
+      <li>Leave data events off for now unless you want deep logging for S3 or Lambda.</li>
+    </ol>
+ 
+    <pre data-lang="json"><code><span class="tok-p">{</span>
+  <span class="tok-n">"TrailName"</span><span class="tok-p">:</span> <span class="tok-s">"acct-main-trail"</span><span class="tok-p">,</span>
+  <span class="tok-n">"IsMultiRegionTrail"</span><span class="tok-p">:</span> <span class="tok-k">true</span><span class="tok-p">,</span>
+  <span class="tok-n">"IncludeGlobalServiceEvents"</span><span class="tok-p">:</span> <span class="tok-k">true</span><span class="tok-p">,</span>
+  <span class="tok-n">"EventSelectors"</span><span class="tok-p">: [</span>
+    <span class="tok-p">{</span>
+      <span class="tok-n">"ReadWriteType"</span><span class="tok-p">:</span> <span class="tok-s">"All"</span><span class="tok-p">,</span>        <span class="tok-c">// capture both reads and writes</span>
+      <span class="tok-n">"IncludeManagementEvents"</span><span class="tok-p">:</span> <span class="tok-k">true</span><span class="tok-p">,</span>
+      <span class="tok-n">"DataResources"</span><span class="tok-p">:</span> <span class="tok-p">[]</span>             <span class="tok-c">// add S3/Lambda ARNs here later</span>
+    <span class="tok-p">}</span>
+  <span class="tok-p">]</span>
+<span class="tok-p">}</span></code></pre>
+ 
+    <!-- ── Step 2 ──────────────────────────────────────────────── -->
+    <div class="step-header">
+      <span class="step-num">Step 02</span>
+      <span class="step-title">Set Up Storage</span>
+    </div>
+ 
+    <p>CloudTrail needs somewhere to drop its files. During trail creation:</p>
+ 
+    <ol>
+      <li>Choose <strong>Create new S3 bucket</strong>.</li>
+      <li>Give it a unique name: <code>ct-logs-&lt;account-id&gt;-&lt;region&gt;</code>.</li>
+      <li>Keep <strong>Block all public access</strong> enabled.</li>
+      <li>Leave the default encryption, or step up to KMS if you need stronger control.</li>
+    </ol>
+ 
+    <div class="callout">
       <p>
-        Wrap up with the key takeaways. Remind the reader what problem you solved, what the key insight was, and what they should do next. End with an invitation to continue the conversation.
+        A consistent bucket naming convention like <code>ct-logs-123456789012-us-east-1</code>
+        makes cross-account log management much easier as your organization grows.
       </p>
-
+    </div>
+ 
+    <!-- ── Step 3 ──────────────────────────────────────────────── -->
+    <div class="step-header">
+      <span class="step-num">Step 03</span>
+      <span class="step-title">Strengthen Your Setup</span>
+    </div>
+ 
+    <p>These are optional but worth doing from the start:</p>
+ 
+    <ul>
+      <li>
+        <strong>Log file validation</strong> — proves your logs weren't tampered with after the
+        fact. One checkbox, no reason to skip it.
+      </li>
+      <li>
+        <strong>SSE-KMS encryption</strong> — worth enabling if you're in a regulated environment.
+        AWS will create a new key and policy for you automatically.
+      </li>
+      <li>
+        <strong>CloudTrail Lake</strong> — skip for now unless you're ready to dive into advanced
+        analysis. It's powerful but adds complexity.
+      </li>
+    </ul>
+ 
+    <!-- ── Step 4 ──────────────────────────────────────────────── -->
+    <div class="step-header">
+      <span class="step-num">Step 04</span>
+      <span class="step-title">Stream to CloudWatch Logs</span>
+    </div>
+ 
+    <p>
+      If you want real-time alerts, such as "notify me if CloudTrail is turned off," streaming
+      to CloudWatch is the way to do it.
+    </p>
+ 
+    <ol>
+      <li>Expand the <strong>CloudWatch Logs</strong> section during trail creation.</li>
+      <li>Create a new log group, for example <code>/aws/cloudtrail/acct-main-trail</code>.</li>
+      <li>Let AWS create the suggested IAM role for permissions.</li>
+    </ol>
+ 
+    <pre data-lang="bash"><code><span class="tok-c"># Create the log group manually if needed</span>
+<span class="tok-n">aws</span> <span class="tok-f">logs</span> <span class="tok-f">create-log-group</span> \
+  <span class="tok-k">--log-group-name</span> <span class="tok-s">"/aws/cloudtrail/acct-main-trail"</span> \
+  <span class="tok-k">--region</span> <span class="tok-s">us-east-1</span></code></pre>
+ 
+    <!-- ── Step 5 ──────────────────────────────────────────────── -->
+    <div class="step-header">
+      <span class="step-num">Step 05</span>
+      <span class="step-title">Review and Create</span>
+    </div>
+ 
+    <p>
+      Click <strong>Create trail</strong> and your account is now under watch. CloudTrail will
+      begin delivering log files to your S3 bucket within a few minutes of the first API activity.
+    </p>
+ 
+    <!-- ── Step 6 ──────────────────────────────────────────────── -->
+    <div class="step-header">
+      <span class="step-num">Step 06</span>
+      <span class="step-title">Test It</span>
+    </div>
+ 
+    <p>Don't just assume it's working. Verify it:</p>
+ 
+    <ol>
+      <li>Open S3 in a new tab and create then delete a test bucket.</li>
+      <li>
+        Go back to <strong>CloudTrail → Event history</strong> and filter by
+        <code>s3.amazonaws.com</code>. Within minutes your actions will appear.
+      </li>
+      <li>
+        Check your S3 bucket for <code>.gz</code> log files organized in a time-based folder
+        structure.
+      </li>
+      <li>
+        If you enabled CloudWatch, open the log group and confirm new log streams are appearing.
+      </li>
+    </ol>
+ 
+    <div class="callout warning">
       <p>
-        Have questions or found a different approach? Reach me on <a href="#">Twitter/X</a> or <a href="#">LinkedIn</a> — I love hearing how others are solving these problems.
+        If you don't see events within 15 minutes, verify the S3 bucket policy allows CloudTrail
+        to write to it. A misconfigured bucket policy is the most common reason logs stop
+        delivering silently.
       </p>
+    </div>
+ 
+    <div class="section-divider"><span>◆</span></div>
+ 
+    <!-- ── Cleanup ─────────────────────────────────────────────── -->
+    <h2><span class="h2-num">Cleanup</span> If This Was Just Practice</h2>
+ 
+    <ol>
+      <li>Delete the trail in CloudTrail.</li>
+      <li>Delete the CloudWatch log group if you created one.</li>
+      <li>Empty and delete the S3 bucket.</li>
+      <li>Schedule deletion of the KMS key if you created one.</li>
+    </ol>
+ 
+    <div class="callout">
+      <p>
+        In real environments, CloudTrail should stay on permanently. Only clean it up in a
+        sandbox to avoid clutter or small ongoing costs.
+      </p>
+    </div>
+ 
+    <div class="section-divider"><span>◆</span></div>
+ 
+    <!-- ── Optional Enhancements ───────────────────────────────── -->
+    <h2><span class="h2-num">Next</span> Optional Enhancements</h2>
+ 
+    <p>Once your baseline is solid, here's where to go next:</p>
+ 
+    <ul>
+      <li>
+        <strong>Data events</strong> — add logging for critical S3 buckets or Lambda functions
+        to capture object-level activity, not just management plane calls.
+      </li>
+      <li>
+        <strong>CloudTrail Insights</strong> — detects unusual spikes in API activity
+        automatically, useful for catching credential misuse early.
+      </li>
+      <li>
+        <strong>CloudWatch alarms</strong> — set up metric filters and alarms for high-risk
+        events like root account logins or IAM policy changes.
+      </li>
+      <li>
+        <strong>Athena queries</strong> — run SQL directly against your log files in S3 for
+        forensic analysis without standing up any additional infrastructure.
+      </li>
+      <li>
+        <strong>S3 lifecycle rules</strong> — transition logs older than 90 days to Glacier
+        to cut storage costs without losing your audit history.
+      </li>
+    </ul>
+ 
+    <pre data-lang="sql"><code><span class="tok-c">-- Example: find all IAM changes in the last 7 days using Athena</span>
+<span class="tok-k">SELECT</span>
+  <span class="tok-n">eventtime</span><span class="tok-p">,</span>
+  <span class="tok-n">useridentity</span><span class="tok-p">.</span><span class="tok-n">arn</span><span class="tok-p">,</span>
+  <span class="tok-n">eventname</span><span class="tok-p">,</span>
+  <span class="tok-n">sourceipaddress</span>
+<span class="tok-k">FROM</span> <span class="tok-n">cloudtrail_logs</span>
+<span class="tok-k">WHERE</span> <span class="tok-n">eventsource</span> <span class="tok-p">=</span> <span class="tok-s">'iam.amazonaws.com'</span>
+  <span class="tok-k">AND</span> <span class="tok-f">date_diff</span><span class="tok-p">(</span><span class="tok-s">'day'</span><span class="tok-p">,</span> <span class="tok-f">from_iso8601_timestamp</span><span class="tok-p">(</span><span class="tok-n">eventtime</span><span class="tok-p">),</span> <span class="tok-f">now</span><span class="tok-p">())</span> <span class="tok-p">&lt;=</span> <span class="tok-v">7</span>
+<span class="tok-k">ORDER BY</span> <span class="tok-n">eventtime</span> <span class="tok-k">DESC</span><span class="tok-p">;</span></code></pre>
+ 
+    <div class="section-divider"><span>◆</span></div>
+ 
+    <!-- ── Wrapping Up ─────────────────────────────────────────── -->
+    <h2><span class="h2-num">↗</span> Wrapping Up</h2>
+ 
+    <p>
+      You've now built a baseline CloudTrail setup that gives you full visibility into your AWS
+      account. With CloudTrail logging into S3, and optionally CloudWatch, Athena, or CloudTrail
+      Lake, you can answer the questions that matter most:
+    </p>
+ 
+    <ul>
+      <li>Who did it?</li>
+      <li>What did they do?</li>
+      <li>When did it happen?</li>
+      <li>Where did the request come from?</li>
+      <li>Which resource was affected?</li>
+    </ul>
+ 
+    <blockquote>
+      <p>
+        In other words, you just installed a reliable security camera system for your AWS account.
+      </p>
+    </blockquote>
 
     </article>
     <!-- ════════════════════════════════════════════════════════════ -->
@@ -321,9 +527,9 @@
     <footer class="post-footer">
       <!-- EDIT: Add tags relevant to the post content -->
       <div class="post-footer-tags">
-        <span class="post-footer-tag">#TagOne</span>
-        <span class="post-footer-tag">#TagTwo</span>
-        <span class="post-footer-tag">#TagThree</span>
+        <span class="post-footer-tag">#AWS</span>
+        <span class="post-footer-tag">#CloudTrail</span>
+        <span class="post-footer-tag">#S3</span>
       </div>
 
       <!-- EDIT: Update prev/next post links -->
